@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project/pages/dashboard_page.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -55,7 +56,7 @@ class LoginPage extends StatelessWidget {
               SizedBox(height: 10),
               TextButton(
                 onPressed: () {
-                  print('Forgot is clicked');
+                  print('Forgot Password Clicked');
                 },
                 child: Text(
                   'Forgot password?',
@@ -63,7 +64,12 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DashboardPage()),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
