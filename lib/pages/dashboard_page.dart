@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project/pages/ExpenseManager/expense_manager_dashboard.dart';
+import 'package:project/pages/TaskManager/task_list_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -36,7 +37,7 @@ class DashboardPage extends StatelessWidget {
                   _buildDashboardCard(
                     context,
                     icon: Icons.account_balance_wallet,
-                    title: "Expense Manager",
+                    title: "Expenses",
                     color: Colors.green,
                     route: '/expense',
                   ),
@@ -50,14 +51,14 @@ class DashboardPage extends StatelessWidget {
                   _buildDashboardCard(
                     context,
                     icon: Icons.bar_chart,
-                    title: "Graphical Insights",
+                    title: "Graph",
                     color: Colors.purple,
                     route: '/insights',
                   ),
                   _buildDashboardCard(
                     context,
                     icon: Icons.notifications,
-                    title: "Reminders & Notifications",
+                    title: "Notifications",
                     color: Colors.red,
                     route: '/reminders',
                   ),
@@ -90,12 +91,12 @@ class DashboardPage extends StatelessWidget {
               radius: 30,
               child: Icon(icon, color: Colors.white, size: 30),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 5),
             Text(
               title,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 14,
               ),
               textAlign: TextAlign.center,
             ),
