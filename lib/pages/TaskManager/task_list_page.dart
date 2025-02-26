@@ -31,40 +31,109 @@ class _TaskListPageState extends State<TaskListPage> {
     });
   }
 
-  void addTask(String task) {
+  void addTask(String task, DateTime startTime, DateTime endTime) {
     if (task.isNotEmpty) {
       setState(() {
-        taskList.add(Task(id: DateTime.now().toString(), taskText: task));
+        taskList.add(Task(
+          id: DateTime.now().toString(),
+          taskText: task,
+          startTime: startTime,
+          endTime: endTime,
+        ));
       });
       _taskController.clear();
     }
   }
 
   void _showAddTaskDialog() {
+    DateTime? selectedStartTime;
+    DateTime? selectedEndTime;
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text("Add Task"),
-          content: TextField(
-            controller: _taskController,
-            decoration: const InputDecoration(hintText: "Enter task"),
-          ),
-          actions: [
-            TextButton(
-              child: const Text("Cancel"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              child: const Text("Add"),
-              onPressed: () {
-                addTask(_taskController.text);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Add Task"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _taskController,
+                    decoration: const InputDecoration(hintText: "Enter task"),
+                  ),
+                  const SizedBox(height: 10),
+                  ListTile(
+                    title: Text(selectedStartTime == null
+                        ? "Select Start Time"
+                        : "Start: ${selectedStartTime!.hour}:${selectedStartTime!.minute}"),
+                    trailing: const Icon(Icons.timer),
+                    onTap: () async {
+                      TimeOfDay? picked = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          selectedStartTime = DateTime(
+                            DateTime.now().year,
+                            DateTime.now().month,
+                            DateTime.now().day,
+                            picked.hour,
+                            picked.minute,
+                          );
+                        });
+                      }
+                    },
+                  ),
+                  ListTile(
+                    title: Text(selectedEndTime == null
+                        ? "Select End Time"
+                        : "End: ${selectedEndTime!.hour}:${selectedEndTime!.minute}"),
+                    trailing: const Icon(Icons.timer_off),
+                    onTap: () async {
+                      TimeOfDay? picked = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          selectedEndTime = DateTime(
+                            DateTime.now().year,
+                            DateTime.now().month,
+                            DateTime.now().day,
+                            picked.hour,
+                            picked.minute,
+                          );
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  child: const Text("Cancel"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text("Add"),
+                  onPressed: () {
+                    if (_taskController.text.isNotEmpty &&
+                        selectedStartTime != null &&
+                        selectedEndTime != null) {
+                      addTask(_taskController.text, selectedStartTime!,
+                          selectedEndTime!);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );

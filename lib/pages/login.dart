@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:project/Screen/welcome_screen.dart';
+//import 'package:project/Screen/welcome_screen.dart';
 import 'package:project/pages/dashboard_page.dart';
 
 class LoginPage extends StatelessWidget {
@@ -67,7 +69,8 @@ class LoginPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => DashboardPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const WelcomeScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(

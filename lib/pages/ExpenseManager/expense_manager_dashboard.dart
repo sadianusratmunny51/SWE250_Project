@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project/pages/ExpenseManager/expense_records.dart';
 import 'package:project/pages/ExpenseManager/expense_reports_page.dart';
+import 'package:project/pages/ExpenseManager/expense_chart_page.dart';
 
 class ExpenseDashboard extends StatefulWidget {
   const ExpenseDashboard({super.key});
@@ -11,11 +12,25 @@ class ExpenseDashboard extends StatefulWidget {
 
 class _ExpenseDashboardState extends State<ExpenseDashboard> {
   List<Map<String, dynamic>> expenses = []; // Stores expenses
+  double totalBudget =
+      1000.0; // Example totalBudget, you can update this based on user input
 
   void _addExpense(String type, double amount) {
     setState(() {
       expenses.add({"type": type, "amount": amount});
     });
+  }
+
+  // Convert expenses list to a Map<String, double> for chart
+  Map<String, double> _convertExpensesToCategoryMap(
+      List<Map<String, dynamic>> expenses) {
+    Map<String, double> categoryMap = {};
+    for (var expense in expenses) {
+      String category = expense['type'];
+      double amount = expense['amount'];
+      categoryMap[category] = (categoryMap[category] ?? 0) + amount;
+    }
+    return categoryMap;
   }
 
   @override
@@ -59,7 +74,19 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                   ),
                 );
               }),
-              _buildNavItem(Icons.pie_chart, "Charts", false, () {}),
+              _buildNavItem(Icons.pie_chart, "Charts", false, () {
+                // Pass totalBudget and the mapped expenses to the ChartPage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChartPage(
+                      totalBudget: totalBudget, // Pass total budget
+                      expenses: _convertExpensesToCategoryMap(
+                          expenses), // Pass mapped expenses
+                    ),
+                  ),
+                );
+              }),
               _buildNavItem(Icons.description, "Reports", false, () {
                 Navigator.push(
                   context,

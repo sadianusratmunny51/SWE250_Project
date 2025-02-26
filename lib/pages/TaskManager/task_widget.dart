@@ -7,43 +7,37 @@ class TaskItem extends StatelessWidget {
   final Function(Task) onDelete;
 
   const TaskItem({
-    super.key,
+    Key? key,
     required this.task,
     required this.onTaskChanged,
     required this.onDelete,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        onTap: () {
-          onTaskChanged(task);
-        },
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-        tileColor: Colors.white,
-        leading: Icon(
-          task.isDone ? Icons.check_box : Icons.check_box_outline_blank,
-          color: Colors.blue,
+        leading: Checkbox(
+          value: task.isDone,
+          onChanged: (_) => onTaskChanged(task),
         ),
         title: Text(
-          task.taskText!,
+          task.taskText,
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
             decoration: task.isDone ? TextDecoration.lineThrough : null,
           ),
         ),
+        subtitle: task.startTime != null && task.endTime != null
+            ? Text(
+                "Start: ${task.startTime!.hour}:${task.startTime!.minute} | "
+                "End: ${task.endTime!.hour}:${task.endTime!.minute}",
+                style: const TextStyle(color: Colors.grey),
+              )
+            : null,
         trailing: IconButton(
           icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () {
-            onDelete(task);
-          },
+          onPressed: () => onDelete(task),
         ),
       ),
     );
