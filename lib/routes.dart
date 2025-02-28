@@ -6,6 +6,7 @@ import 'pages/ExpenseManager/expense_manager_dashboard.dart';
 import 'pages/TaskManager/task_list_page.dart';
 import 'pages/Notifications/notification_page.dart';
 import 'Screen/splash_screen.dart';
+import 'pages/Profile/profile_page.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> routes = {
@@ -15,5 +16,6 @@ class AppRoutes {
     '/expense': (context) => const ExpenseDashboard(),
     '/tasks': (context) => const TaskListPage(),
     '/reminders': (context) => const NotificationsPage(),
+    '/profile': (context) => ProfilePage(),
   };
 }
