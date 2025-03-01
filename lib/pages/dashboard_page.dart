@@ -1,9 +1,6 @@
-import 'dart:async'; // Import for Timer
-import 'dart:ui'; // Import for blur effect
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:project/pages/ExpenseManager/expense_manager_dashboard.dart';
-import 'package:project/pages/TaskManager/task_list_page.dart';
-import 'package:project/pages/Profile/profile_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -13,27 +10,113 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  String displayText = ''; // Text that will be displayed in AppBar
+  String displayText = ''; // Animated title text
+  String descriptionText = ''; // Animated description text
+  String line1Text = ''; // Animated first line text
+  String line2Text = ''; // Animated second line text
+  int _currentBackgroundIndex = 0; // Index of the current background image
+
+  // List of background images
+  final List<String> _backgroundImages = [
+    'assets/images/back1.png',
+    'assets/images/back2.png',
+    'assets/images/back3.jpg',
+    'assets/images/back4.png',
+  ];
+
+  // List of descriptions corresponding to each image
+  final List<String> _backgroundDescriptions = [
+    'Track your Location',
+    'Schedule your Tasks',
+    'Track your activities',
+    'Analyze your performance',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _animateText(); // Start the animation when the widget is initialized
+    _animateText(); // Start animating the title text
+    _animateDescriptionText(_backgroundDescriptions[
+        _currentBackgroundIndex]); // Manually animate the description text for the first background
+    _animateLine1(); // Manually animate the first line text for the first background
+    _animateLine2(); // Manually animate the second line text for the first background
+    _startBackgroundRotation(); // Start rotating the background images
   }
 
-  // Method to animate text
+  // Animate the AppBar text
   void _animateText() {
-    const text = 'TrackEase Dashboard'; // The text to animate
+    const text = 'TrackEase Dashboard';
     int index = 0;
-    Timer.periodic(const Duration(milliseconds: 150), (timer) {
+    Timer.periodic(const Duration(milliseconds: 300), (timer) {
       if (index < text.length) {
         setState(() {
-          displayText += text[index]; // Add one letter at a time
+          displayText += text[index];
         });
         index++;
       } else {
-        timer.cancel(); // Stop the timer once the text is fully displayed
+        timer.cancel();
       }
+    });
+  }
+
+  // Animate the description text
+  void _animateDescriptionText(String text) {
+    int index = 0;
+    setState(() {
+      descriptionText = '';
+    });
+    Timer.periodic(const Duration(milliseconds: 150), (timer) {
+      if (index < text.length) {
+        setState(() {
+          descriptionText += text[index];
+        });
+        index++;
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  void _animateLine1() {
+    const text = 'Empower your day';
+    int index = 0;
+    Timer.periodic(const Duration(milliseconds: 300), (timer) {
+      if (index < text.length) {
+        setState(() {
+          line1Text += text[index];
+        });
+        index++;
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  // Animate the second line of tagline
+  void _animateLine2() {
+    const text = 'organize your life';
+    int index = 0;
+    Timer.periodic(const Duration(milliseconds: 300), (timer) {
+      if (index < text.length) {
+        setState(() {
+          line2Text += text[index];
+        });
+        index++;
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  // Background image rotation every 5 seconds
+  void _startBackgroundRotation() {
+    Timer.periodic(const Duration(seconds: 5), (timer) {
+      setState(() {
+        _currentBackgroundIndex =
+            (_currentBackgroundIndex + 1) % _backgroundImages.length;
+        _animateDescriptionText(
+            _backgroundDescriptions[_currentBackgroundIndex]);
+      });
     });
   }
 
@@ -44,50 +127,155 @@ class _DashboardPageState extends State<DashboardPage> {
         preferredSize: const Size.fromHeight(450),
         child: AppBar(
           title: Text(
-            displayText, // Animated text in the AppBar
+            displayText,
             style: const TextStyle(
               color: Colors.yellow,
               fontWeight: FontWeight.bold,
               fontSize: 24,
             ),
           ),
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.black,
           elevation: 0,
           centerTitle: true,
-          iconTheme: const IconThemeData(
-            color: Colors.red,
-          ),
+          iconTheme: const IconThemeData(color: Colors.red),
           flexibleSpace: Stack(
             children: [
-              // Background Image
+              // Background Image (changes dynamically)
               Positioned.fill(
-                child: Image.asset(
-                  'assets/images/back.jpg',
-                  fit: BoxFit.cover,
+                child: AnimatedSwitcher(
+                  duration: const Duration(seconds: 3), // Smooth transition
+                  child: Image.asset(
+                    _backgroundImages[_currentBackgroundIndex],
+                    key: ValueKey<String>(
+                        _backgroundImages[_currentBackgroundIndex]),
+                    fit: BoxFit.fitWidth,
+                  ),
                 ),
               ),
 
               // Glassmorphism Effect
               Positioned.fill(
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                   child: Container(
                     color: Colors.black.withOpacity(0.3),
                   ),
                 ),
               ),
 
-              // Smaller Image on Top of the Background
+              // Motivational Text Section
               Positioned(
-                top: 100,
-                left: 50,
-                right: 50,
-                child: SizedBox(
-                  width: 500,
-                  height: 400,
-                  child: Image.asset(
-                    'assets/images/munni-img2.png',
-                    fit: BoxFit.contain,
+                bottom: 10, // Position for the Motivational Text
+                left: -140,
+                right: 20,
+                child: Column(
+                  children: [
+                    // First line of motivational text with typewriter effect
+                    Text(
+                      line1Text,
+                      style: const TextStyle(
+                        color: Colors.blueAccent, // Color for the first line
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        fontStyle: FontStyle.italic, // Italic style
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 5),
+                    // Space between lines
+                    // const Text(
+                    //   "Additional Text here",
+                    //   style: TextStyle(
+                    //     color: Colors.green,
+                    //     fontSize: 16,
+                    //   ),
+                    //   textAlign: TextAlign.center,
+                    // ),
+
+                    // Second line of motivational text with typewriter effect
+                    // Text(
+                    //   line2Text,
+                    //   style: const TextStyle(
+                    //     color: Colors.white, // Color for the second line
+                    //     fontSize: 20,
+                    //     fontWeight: FontWeight.bold,
+                    //     fontStyle: FontStyle.italic, // Italic style
+                    //   ),
+                    //   textAlign: TextAlign.center,
+                    // ),
+                  ],
+                ),
+              ),
+              // const SizedBox(height: 5),
+              Positioned(
+                bottom: -8, // Position for the Motivational Text
+                left: 140,
+                right: 20,
+                child: Column(
+                  children: [
+                    // First line of motivational text with typewriter effect
+                    Text(
+                      line2Text,
+                      style: const TextStyle(
+                        color: Colors.blueAccent, // Color for the first line
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        fontStyle: FontStyle.italic, // Italic style
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 5),
+                    // Space between lines
+                    // const Text(
+                    //   "Additional Text here",
+                    //   style: TextStyle(
+                    //     color: Colors.green,
+                    //     fontSize: 16,
+                    //   ),
+                    //   textAlign: TextAlign.center,
+                    // ),
+
+                    // Second line of motivational text with typewriter effect
+                    // Text(
+                    //   line2Text,
+                    //   style: const TextStyle(
+                    //     color: Colors.white, // Color for the second line
+                    //     fontSize: 20,
+                    //     fontWeight: FontWeight.bold,
+                    //     fontStyle: FontStyle.italic, // Italic style
+                    //   ),
+                    //   textAlign: TextAlign.center,
+                    // ),
+                  ],
+                ),
+              ),
+
+              // Description text - Displays below the Motivational Text (dynamic description of the background)
+              Positioned(
+                bottom:
+                    150, // Adjust position to ensure it doesn't overlap with motivational text
+                left: 20,
+                right: 20,
+                child: Container(
+                  width: 200, // Fixed width
+                  height: 40, // Fixed height
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color:
+                        Colors.black.withOpacity(0.5), // Semi-transparent black
+                    borderRadius: BorderRadius.circular(20), // Rounded corners
+                  ),
+                  child: Text(
+                    descriptionText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w300,
+                      fontStyle:
+                          FontStyle.italic, // Italic style for description text
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
@@ -96,7 +284,6 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ),
       body: Container(
-        // Gradient Background
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.black87, Colors.black54],
@@ -114,48 +301,36 @@ class _DashboardPageState extends State<DashboardPage> {
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
                 children: [
-                  _buildDashboardCard(
-                    context,
-                    icon: Icons.task,
-                    title: "Task List",
-                    color: Colors.orange,
-                    route: '/tasks',
-                  ),
-                  _buildDashboardCard(
-                    context,
-                    icon: Icons.account_balance_wallet,
-                    title: "Expenses",
-                    color: Colors.green,
-                    route: '/expense',
-                  ),
-                  _buildDashboardCard(
-                    context,
-                    icon: Icons.map,
-                    title: "Track Me",
-                    color: Colors.blue,
-                    route: '/trackme',
-                  ),
-                  _buildDashboardCard(
-                    context,
-                    icon: Icons.bar_chart,
-                    title: "Graph",
-                    color: Colors.purple,
-                    route: '/insights',
-                  ),
-                  _buildDashboardCard(
-                    context,
-                    icon: Icons.notifications,
-                    title: "Notifications",
-                    color: Colors.red,
-                    route: '/reminders',
-                  ),
-                  _buildDashboardCard(
-                    context,
-                    icon: Icons.person,
-                    title: "Profile",
-                    color: Colors.deepPurpleAccent,
-                    route: '/profile',
-                  ),
+                  _buildDashboardCard(context,
+                      icon: Icons.task,
+                      title: "Task List",
+                      color: Colors.orange,
+                      route: '/tasks'),
+                  _buildDashboardCard(context,
+                      icon: Icons.account_balance_wallet,
+                      title: "Expenses",
+                      color: Colors.green,
+                      route: '/expense'),
+                  _buildDashboardCard(context,
+                      icon: Icons.map,
+                      title: "Track Me",
+                      color: Colors.blue,
+                      route: '/trackme'),
+                  _buildDashboardCard(context,
+                      icon: Icons.bar_chart,
+                      title: "Graph",
+                      color: Colors.purple,
+                      route: '/insights'),
+                  _buildDashboardCard(context,
+                      icon: Icons.notifications,
+                      title: "Notifications",
+                      color: Colors.red,
+                      route: '/reminders'),
+                  _buildDashboardCard(context,
+                      icon: Icons.person,
+                      title: "Profile",
+                      color: Colors.deepPurpleAccent,
+                      route: '/profile'),
                 ],
               ),
             ),
@@ -165,13 +340,11 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildDashboardCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required Color color,
-    required String route,
-  }) {
+  Widget _buildDashboardCard(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required Color color,
+      required String route}) {
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, route),
       child: AnimatedContainer(
@@ -188,7 +361,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         child: Card(
-          color: Colors.transparent, // Keeps it aligned with the container
+          color: Colors.transparent,
           elevation: 4,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
