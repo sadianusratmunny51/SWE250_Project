@@ -55,20 +55,32 @@ class _TaskListPageState extends State<TaskListPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text("Add Task"),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              backgroundColor: Colors.white,
+              title: const Text(
+                "Add New Task",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: _taskController,
-                    decoration: const InputDecoration(hintText: "Enter task"),
+                    decoration: InputDecoration(
+                      hintText: "Enter task",
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                    ),
                   ),
                   const SizedBox(height: 10),
                   ListTile(
                     title: Text(selectedStartTime == null
                         ? "Select Start Time"
                         : "Start: ${selectedStartTime!.hour}:${selectedStartTime!.minute}"),
-                    trailing: const Icon(Icons.timer),
+                    trailing: const Icon(Icons.timer, color: Colors.blue),
                     onTap: () async {
                       TimeOfDay? picked = await showTimePicker(
                         context: context,
@@ -91,7 +103,7 @@ class _TaskListPageState extends State<TaskListPage> {
                     title: Text(selectedEndTime == null
                         ? "Select End Time"
                         : "End: ${selectedEndTime!.hour}:${selectedEndTime!.minute}"),
-                    trailing: const Icon(Icons.timer_off),
+                    trailing: const Icon(Icons.timer_off, color: Colors.red),
                     onTap: () async {
                       TimeOfDay? picked = await showTimePicker(
                         context: context,
@@ -114,13 +126,16 @@ class _TaskListPageState extends State<TaskListPage> {
               ),
               actions: [
                 TextButton(
-                  child: const Text("Cancel"),
+                  child:
+                      const Text("Cancel", style: TextStyle(color: Colors.red)),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                 ),
                 ElevatedButton(
-                  child: const Text("Add"),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  child:
+                      const Text("Add", style: TextStyle(color: Colors.white)),
                   onPressed: () {
                     if (_taskController.text.isNotEmpty &&
                         selectedStartTime != null &&
@@ -142,7 +157,7 @@ class _TaskListPageState extends State<TaskListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 141, 190, 142),
+      backgroundColor: Colors.white30,
       appBar: _buildAppBar(),
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -153,12 +168,13 @@ class _TaskListPageState extends State<TaskListPage> {
               child: ListView(
                 children: [
                   Container(
-                    margin: const EdgeInsets.only(top: 50, bottom: 20),
+                    margin: const EdgeInsets.only(top: 30, bottom: 10),
                     child: const Text(
                       'All Tasks',
                       style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -176,8 +192,9 @@ class _TaskListPageState extends State<TaskListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
-        child: const Icon(Icons.add),
-        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, size: 30),
+        backgroundColor: Colors.blueAccent,
+        shape: const CircleBorder(),
       ),
     );
   }
@@ -185,9 +202,9 @@ class _TaskListPageState extends State<TaskListPage> {
   AppBar _buildAppBar() {
     return AppBar(
       elevation: 0,
-      backgroundColor: const Color.fromARGB(255, 141, 190, 142),
+      backgroundColor: Colors.lightBlueAccent,
       title: const Text(
-        "Task List",
+        "Task Manager",
         style: TextStyle(
             color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
       ),
@@ -197,18 +214,25 @@ class _TaskListPageState extends State<TaskListPage> {
 
   Widget _buildSearchBox() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15),
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
+      margin: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+              color: Colors.grey.shade300,
+              blurRadius: 10,
+              offset: const Offset(0, 4))
+        ],
       ),
       child: const TextField(
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(vertical: 12),
-          prefixIcon: Icon(Icons.search, color: Colors.black, size: 20),
+          prefixIcon: Icon(Icons.search, color: Colors.black, size: 22),
           border: InputBorder.none,
-          hintText: 'Search for tasks',
+          hintText: 'Search for tasks...',
+          hintStyle: TextStyle(color: Colors.grey),
         ),
       ),
     );

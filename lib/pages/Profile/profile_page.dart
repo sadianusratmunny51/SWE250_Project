@@ -6,8 +6,8 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String name = "John Doe";
-  String email = "johndoe@example.com";
+  String name = "Sadia nusrat munni";
+  String email = "sadiamunny51@gmail.com";
 
   void _editProfile() {
     TextEditingController nameController = TextEditingController(text: name);

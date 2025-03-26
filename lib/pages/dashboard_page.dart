@@ -20,27 +20,26 @@ class _DashboardPageState extends State<DashboardPage> {
   final List<String> _backgroundImages = [
     'assets/images/back1.png',
     'assets/images/back2.png',
+    'assets/images/back44.png',
     'assets/images/back3.jpg',
-    'assets/images/back4.png',
   ];
 
   // List of descriptions corresponding to each image
   final List<String> _backgroundDescriptions = [
     'Track your Location',
     'Schedule your Tasks',
-    'Track your activities',
+    'Summarize your spendings',
     'Analyze your performance',
   ];
 
   @override
   void initState() {
     super.initState();
-    _animateText(); // Start animating the title text
-    _animateDescriptionText(_backgroundDescriptions[
-        _currentBackgroundIndex]); // Manually animate the description text for the first background
-    _animateLine1(); // Manually animate the first line text for the first background
-    _animateLine2(); // Manually animate the second line text for the first background
-    _startBackgroundRotation(); // Start rotating the background images
+    _animateText();
+    _animateDescriptionText(_backgroundDescriptions[_currentBackgroundIndex]);
+    _animateLine1();
+    _animateLine2();
+    _startBackgroundRotation();
   }
 
   // Animate the AppBar text
@@ -252,8 +251,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
               // Description text - Displays below the Motivational Text (dynamic description of the background)
               Positioned(
-                bottom:
-                    150, // Adjust position to ensure it doesn't overlap with motivational text
+                bottom: 150,
                 left: 20,
                 right: 20,
                 child: Container(
@@ -262,8 +260,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color:
-                        Colors.black.withOpacity(0.5), // Semi-transparent black
+                    color: Colors.black.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(20), // Rounded corners
                   ),
                   child: Text(

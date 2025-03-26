@@ -35,8 +35,9 @@ class _ChartPageState extends State<ChartPage> {
         color: getCategoryColor(entry.key),
         value: percentage,
         title: "${percentage.toStringAsFixed(2)}%",
-        radius: 50,
-        titleStyle: const TextStyle(color: Colors.white, fontSize: 12),
+        radius: 70,
+        titleStyle: const TextStyle(
+            color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500),
       );
     }).toList();
   }
@@ -57,15 +58,22 @@ class _ChartPageState extends State<ChartPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text("Expenses", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.blueGrey,
+        title: const Text("Percentage Calculator",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            )),
         centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(
+            SizedBox(height: 30), // Adds space from the top
+            SizedBox(
+              height: 250, // Reduce height to move it up
               child: PieChart(
                 PieChartData(
                   sections: getSections(),
@@ -75,7 +83,7 @@ class _ChartPageState extends State<ChartPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 100), // Space between chart and legend
             _buildLegend(),
           ],
         ),
@@ -84,21 +92,38 @@ class _ChartPageState extends State<ChartPage> {
   }
 
   Widget _buildLegend() {
+    double totalSpent =
+        widget.expenses.values.fold(0, (sum, amount) => sum + amount);
+
     return Column(
-      children: widget.expenses.keys.map((category) {
-        return Row(
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: getCategoryColor(category),
-                shape: BoxShape.circle,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widget.expenses.entries.map((entry) {
+        double percentage = (entry.value / totalSpent) * 100;
+
+        return Padding(
+          padding:
+              const EdgeInsets.only(bottom: 10), // Add spacing between items
+          child: Row(
+            children: [
+              Container(
+                width: 14, // Increased size
+                height: 14, // Increased size
+                decoration: BoxDecoration(
+                  color: getCategoryColor(entry.key),
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Text(category, style: const TextStyle(color: Colors.white)),
-          ],
+              const SizedBox(width: 10),
+              Text(
+                "${entry.key} - ${percentage.toStringAsFixed(2)}%",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16, // Increase font size for better visibility
+                  fontWeight: FontWeight.bold, // Make text bold
+                ),
+              ),
+            ],
+          ),
         );
       }).toList(),
     );

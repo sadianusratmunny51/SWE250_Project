@@ -11,10 +11,8 @@ class ExpenseDashboard extends StatefulWidget {
 }
 
 class _ExpenseDashboardState extends State<ExpenseDashboard> {
-  List<Map<String, dynamic>> expenses = []; // Stores expenses
-  double totalBudget =
-      1000.0; // Example totalBudget, you can update this based on user input
-
+  List<Map<String, dynamic>> expenses = [];
+  double totalBudget = 1000.0;
   void _addExpense(String type, double amount) {
     setState(() {
       expenses.add({"type": type, "amount": amount});
@@ -36,11 +34,10 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Keep background as before
-
+      backgroundColor: Colors.black,
       body: Column(
         children: const [
-          SizedBox(height: 100), // Adjust space for better alignment
+          SizedBox(height: 100), //allignments
           Center(
             child: Text(
               "Expenses",
@@ -58,7 +55,7 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
 
       // BottomAppBar with 3 items + FloatingActionButton as the 4th item
       bottomNavigationBar: BottomAppBar(
-        color: Colors.black, // Matching background
+        color: Colors.black,
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
         child: SizedBox(
