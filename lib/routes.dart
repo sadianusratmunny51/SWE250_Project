@@ -15,7 +15,7 @@ class AppRoutes {
     '/dashboard': (context) => const DashboardPage(),
     '/expense': (context) => const ExpenseDashboard(),
     '/tasks': (context) => const TaskListPage(),
-    '/reminders': (context) => const NotificationsPage(),
+    //'/reminders': (context) => const NotificationsPage(),
     '/profile': (context) => ProfilePage(),
   };
 }

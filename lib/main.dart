@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-//import 'pages/login.dart';
-import 'routes.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:project/routes.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -14,10 +17,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Your Project',
       debugShowCheckedModeBanner: false,
-      // home: LoginPage(),
-      initialRoute: '/',
-      routes: AppRoutes.routes,
+      initialRoute: '/', // 👈 This points to SplashScreen in routes
+      routes: AppRoutes.routes, // 👈 Uses your central route manager
     );
   }
 }

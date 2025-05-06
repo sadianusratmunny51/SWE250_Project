@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project/pages/TaskManager/task_model.dart';
 import 'package:project/pages/TaskManager/task_widget.dart';
+import 'package:project/pages/Notifications/notification_page.dart'; // Import NotificationsPage
 
 class TaskListPage extends StatefulWidget {
   const TaskListPage({super.key});
@@ -10,7 +11,7 @@ class TaskListPage extends StatefulWidget {
 }
 
 class _TaskListPageState extends State<TaskListPage> {
-  late List<Task> taskList;
+  List<Task> taskList = [];
   final TextEditingController _taskController = TextEditingController();
 
   @override
@@ -158,82 +159,44 @@ class _TaskListPageState extends State<TaskListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white30,
-      appBar: _buildAppBar(),
-      body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: Column(
-          children: [
-            _buildSearchBox(),
-            Expanded(
-              child: ListView(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 30, bottom: 10),
-                    child: const Text(
-                      'All Tasks',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  for (Task task in taskList)
-                    TaskItem(
-                      task: task,
-                      onTaskChanged: toggleTaskStatus,
-                      onDelete: deleteTask,
-                    ),
-                ],
-              ),
-            ),
-          ],
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.lightBlueAccent,
+        title: const Text(
+          "Task Manager",
+          style: TextStyle(
+              color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
         ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.black),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        NotificationsPage(taskList: taskList)),
+              );
+            },
+          )
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: taskList
+            .map((task) => TaskItem(
+                  task: task,
+                  onTaskChanged: toggleTaskStatus,
+                  onDelete: deleteTask,
+                ))
+            .toList(),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
         child: const Icon(Icons.add, size: 30),
         backgroundColor: Colors.blueAccent,
         shape: const CircleBorder(),
-      ),
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      elevation: 0,
-      backgroundColor: Colors.lightBlueAccent,
-      title: const Text(
-        "Task Manager",
-        style: TextStyle(
-            color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-      centerTitle: true,
-    );
-  }
-
-  Widget _buildSearchBox() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
-      margin: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-              color: Colors.grey.shade300,
-              blurRadius: 10,
-              offset: const Offset(0, 4))
-        ],
-      ),
-      child: const TextField(
-        decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(vertical: 12),
-          prefixIcon: Icon(Icons.search, color: Colors.black, size: 22),
-          border: InputBorder.none,
-          hintText: 'Search for tasks...',
-          hintStyle: TextStyle(color: Colors.grey),
-        ),
       ),
     );
   }

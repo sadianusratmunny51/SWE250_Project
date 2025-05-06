@@ -1,8 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:project/Screen/welcome_screen.dart';
+import 'package:project/pages/sign_up_page.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  bool isLoading = false;
+
+  Future<void> loginUser() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      if (userCredential.user != null) {
+        if (userCredential.user!.emailVerified) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+          );
+        } else {
+          await _auth.signOut();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please verify your email first')),
+          );
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? "Login failed")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +66,12 @@ class LoginPage extends StatelessWidget {
           ),
         ),
         child: SingleChildScrollView(
-          // 👈 FIX: Makes UI scrollable
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 80), // 👈 Added space at the top
+                const SizedBox(height: 80),
                 const Icon(Icons.lock, size: 80, color: Colors.white70),
                 const SizedBox(height: 10),
                 const Text(
@@ -31,12 +79,17 @@ class LoginPage extends StatelessWidget {
                   style: TextStyle(color: Colors.white54, fontSize: 16),
                 ),
                 const SizedBox(height: 30),
-
                 _buildTextField(
-                    hint: 'Username', icon: Icons.person, obscure: false),
+                    controller: emailController,
+                    hint: 'Email',
+                    icon: Icons.email,
+                    obscure: false),
                 const SizedBox(height: 15),
                 _buildTextField(
-                    hint: 'Password', icon: Icons.lock, obscure: true),
+                    controller: passwordController,
+                    hint: 'Password',
+                    icon: Icons.lock,
+                    obscure: true),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -47,13 +100,7 @@ class LoginPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const WelcomeScreen()),
-                    );
-                  },
+                  onPressed: isLoading ? null : loginUser,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.white,
@@ -62,7 +109,9 @@ class LoginPage extends StatelessWidget {
                     ),
                     minimumSize: const Size(double.infinity, 50),
                   ),
-                  child: const Text('Log in', style: TextStyle(fontSize: 18)),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Log in', style: TextStyle(fontSize: 18)),
                 ),
                 const SizedBox(height: 20),
                 const Text('Or sign in with',
@@ -91,15 +140,24 @@ class LoginPage extends StatelessWidget {
                       style: TextStyle(color: Colors.white70),
                     ),
                     TextButton(
-                      onPressed: () {},
-                      child: const Text('Sign up',
-                          style: TextStyle(
-                              color: Colors.blueAccent,
-                              fontWeight: FontWeight.bold)),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SignUpPage()),
+                        );
+                      },
+                      child: const Text(
+                        'Sign up',
+                        style: TextStyle(
+                          color: Colors.blueAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 50), // 👈 Added space at the bottom
+                const SizedBox(height: 50),
               ],
             ),
           ),
@@ -109,8 +167,12 @@ class LoginPage extends StatelessWidget {
   }
 
   Widget _buildTextField(
-      {required String hint, required IconData icon, required bool obscure}) {
+      {required TextEditingController controller,
+      required String hint,
+      required IconData icon,
+      required bool obscure}) {
     return TextField(
+      controller: controller,
       obscureText: obscure,
       style: const TextStyle(color: Colors.white),
       cursorColor: Colors.black,
