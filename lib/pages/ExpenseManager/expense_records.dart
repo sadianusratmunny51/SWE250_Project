@@ -10,9 +10,16 @@ class RecordsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text("Records", style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.green,
+        centerTitle: true, // <-- This centers the title
+        title: const Text(
+          "Records",
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: expenses.isEmpty
           ? const Center(

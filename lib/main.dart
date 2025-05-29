@@ -19,8 +19,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Your Project',
       debugShowCheckedModeBanner: false,
-      initialRoute: '/', // 👈 This points to SplashScreen in routes
-      routes: AppRoutes.routes, // 👈 Uses your central route manager
+      initialRoute: '/',
+      routes: AppRoutes.routes, //central route manager
     );
   }
 }

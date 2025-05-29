@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:project/pages/TaskManager/task_model.dart';
 import 'package:project/pages/TaskManager/task_widget.dart';
 import 'package:project/pages/Notifications/notification_page.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 
 class TaskListPage extends StatefulWidget {
   const TaskListPage({super.key});
@@ -17,6 +19,9 @@ class _TaskListPageState extends State<TaskListPage> {
   final TextEditingController _taskController = TextEditingController();
   User? currentUser;
 
+  DateTime _focusedDay = DateTime.now();
+  DateTime _selectedDay = DateTime.now();
+
   @override
   void initState() {
     super.initState();
@@ -24,7 +29,6 @@ class _TaskListPageState extends State<TaskListPage> {
     if (currentUser != null) {
       fetchTasksFromFirestore();
     }
-    // You may want to listen to auth changes too if user can sign in/out while on this page
     FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user != null) {
         setState(() {
@@ -40,13 +44,20 @@ class _TaskListPageState extends State<TaskListPage> {
     });
   }
 
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
+
   void fetchTasksFromFirestore() async {
     if (currentUser == null) return;
+
+    final formattedDate = _formatDate(_selectedDay);
 
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(currentUser!.uid)
         .collection('tasks')
+        .where('date', isEqualTo: formattedDate)
         .get();
 
     final tasks = snapshot.docs.map((doc) {
@@ -76,7 +87,6 @@ class _TaskListPageState extends State<TaskListPage> {
       task.isDone = !task.isDone;
     });
 
-    // Update Firestore document
     await FirebaseFirestore.instance
         .collection('users')
         .doc(currentUser!.uid)
@@ -108,6 +118,7 @@ class _TaskListPageState extends State<TaskListPage> {
       'startTime': Timestamp.fromDate(startTime),
       'endTime': Timestamp.fromDate(endTime),
       'isDone': false,
+      'date': _formatDate(_selectedDay), // ✅ Save date string
     };
 
     final docRef = await FirebaseFirestore.instance
@@ -144,10 +155,8 @@ class _TaskListPageState extends State<TaskListPage> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15)),
               backgroundColor: Colors.white,
-              title: const Text(
-                "Add New Task",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              title: const Text("Add New Task",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -175,9 +184,9 @@ class _TaskListPageState extends State<TaskListPage> {
                       if (picked != null) {
                         setState(() {
                           selectedStartTime = DateTime(
-                            DateTime.now().year,
-                            DateTime.now().month,
-                            DateTime.now().day,
+                            _selectedDay.year,
+                            _selectedDay.month,
+                            _selectedDay.day,
                             picked.hour,
                             picked.minute,
                           );
@@ -198,9 +207,9 @@ class _TaskListPageState extends State<TaskListPage> {
                       if (picked != null) {
                         setState(() {
                           selectedEndTime = DateTime(
-                            DateTime.now().year,
-                            DateTime.now().month,
-                            DateTime.now().day,
+                            _selectedDay.year,
+                            _selectedDay.month,
+                            _selectedDay.day,
                             picked.hour,
                             picked.minute,
                           );
@@ -214,9 +223,7 @@ class _TaskListPageState extends State<TaskListPage> {
                 TextButton(
                   child:
                       const Text("Cancel", style: TextStyle(color: Colors.red)),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
@@ -244,9 +251,7 @@ class _TaskListPageState extends State<TaskListPage> {
   Widget build(BuildContext context) {
     if (currentUser == null) {
       return const Scaffold(
-        body: Center(
-          child: Text('Please sign in to see your tasks'),
-        ),
+        body: Center(child: Text('Please sign in to see your tasks')),
       );
     }
 
@@ -255,11 +260,11 @@ class _TaskListPageState extends State<TaskListPage> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.lightBlueAccent,
-        title: const Text(
-          "Task Manager",
-          style: TextStyle(
-              color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
-        ),
+        title: const Text("Task Manager",
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 24,
+                fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -275,15 +280,42 @@ class _TaskListPageState extends State<TaskListPage> {
           )
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: taskList
-            .map((task) => TaskItem(
-                  task: task,
-                  onTaskChanged: toggleTaskStatus,
-                  onDelete: deleteTask,
-                ))
-            .toList(),
+      body: Column(
+        children: [
+          TableCalendar(
+            focusedDay: _focusedDay,
+            firstDay: DateTime(2020),
+            lastDay: DateTime(2100),
+            calendarFormat: CalendarFormat.month,
+            startingDayOfWeek: StartingDayOfWeek.monday,
+            selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+              });
+              fetchTasksFromFirestore();
+            },
+            calendarStyle: const CalendarStyle(
+              todayDecoration:
+                  BoxDecoration(color: Colors.orange, shape: BoxShape.circle),
+              selectedDecoration:
+                  BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: taskList
+                  .map((task) => TaskItem(
+                        task: task,
+                        onTaskChanged: toggleTaskStatus,
+                        onDelete: deleteTask,
+                      ))
+                  .toList(),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,

@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:project/pages/ExpenseManager/expense_records.dart';
 import 'package:project/pages/ExpenseManager/expense_reports_page.dart';
 import 'package:project/pages/ExpenseManager/expense_chart_page.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class ExpenseDashboard extends StatefulWidget {
   const ExpenseDashboard({super.key});
@@ -12,14 +14,15 @@ class ExpenseDashboard extends StatefulWidget {
 
 class _ExpenseDashboardState extends State<ExpenseDashboard> {
   List<Map<String, dynamic>> expenses = [];
-  double totalBudget = 1000.0;
+  double totalBudget = 0000.0;
+  double dailyBudget = 0.0;
+
   void _addExpense(String type, double amount) {
     setState(() {
       expenses.add({"type": type, "amount": amount});
     });
   }
 
-  // Convert expenses list to a Map<String, double> for chart
   Map<String, double> _convertExpensesToCategoryMap(
       List<Map<String, dynamic>> expenses) {
     Map<String, double> categoryMap = {};
@@ -34,26 +37,183 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Column(
-        children: const [
-          SizedBox(height: 100), //allignments
-          Center(
-            child: Text(
-              "Expenses",
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 2,
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        centerTitle: true,
+        title: const Text(
+          "Expenses",
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.black, Colors.blueGrey],
+          ),
+        ),
+        child: Column(
+          children: [
+            // Calendar on top
+            TableCalendar(
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              focusedDay: DateTime.now(),
+              calendarFormat: CalendarFormat.week,
+              availableCalendarFormats: const {
+                CalendarFormat.week: '1 Weeks',
+              },
+              daysOfWeekHeight: 20,
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle: TextStyle(color: Colors.white),
+                leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
+                rightChevronIcon:
+                    Icon(Icons.chevron_right, color: Colors.white),
+              ),
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) {
+                  final today = DateTime.now();
+                  final twoWeeksStart = focusedDay.subtract(Duration(days: 7));
+                  final twoWeeksEnd = focusedDay.add(Duration(days: 6));
+
+                  if (day.isBefore(twoWeeksStart) || day.isAfter(twoWeeksEnd)) {
+                    return const SizedBox.shrink(); // Hide extra days
+                  }
+
+                  return Center(
+                    child: Text(
+                      '${day.day}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  );
+                },
               ),
             ),
-          ),
-          Spacer(),
-        ],
-      ),
 
-      // BottomAppBar with 3 items + FloatingActionButton as the 4th item
+            // Budget boxes immediately below calendar
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: _showUpdateBudgetDialog,
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      color: Colors.deepPurple[400],
+                      margin: const EdgeInsets.all(16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Monthly Budget",
+                                style: TextStyle(
+                                    color: Colors.white70, fontSize: 14)),
+                            const SizedBox(height: 6),
+                            Text("৳${totalBudget.toStringAsFixed(2)}",
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 6),
+                            LinearProgressIndicator(
+                              value: (expenses.fold(
+                                          0.0, (sum, e) => sum + e['amount']) /
+                                      (totalBudget > 0 ? totalBudget : 1))
+                                  .clamp(0.0, 1.0),
+                              backgroundColor: Colors.white24,
+                              color: Colors.amber,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              "Remaining: ৳${(totalBudget - expenses.fold(0.0, (sum, e) => sum + e['amount'])).toStringAsFixed(2)}",
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: _showUpdateDailyBudgetDialog,
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      color: Colors.teal[400],
+                      margin: const EdgeInsets.all(16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Daily Budget",
+                                style: TextStyle(
+                                    color: Colors.white70, fontSize: 14)),
+                            const SizedBox(height: 6),
+                            Text("৳${dailyBudget.toStringAsFixed(2)}",
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 6),
+                            LinearProgressIndicator(
+                              value: (expenses.fold(
+                                          0.0, (sum, e) => sum + e['amount']) /
+                                      (dailyBudget > 0 ? dailyBudget : 1))
+                                  .clamp(0.0, 1.0),
+                              backgroundColor: Colors.white24,
+                              color: Colors.orange,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              "Remaining: ৳${(dailyBudget - expenses.fold(0.0, (sum, e) => sum + e['amount'])).toStringAsFixed(2)}",
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Expense list fills remaining space
+            Expanded(
+              child: ListView.builder(
+                itemCount: expenses.length,
+                itemBuilder: (context, index) {
+                  final expense = expenses[index];
+                  return Card(
+                    color: Colors.white10,
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ListTile(
+                      leading: const Icon(Icons.monetization_on,
+                          color: Colors.greenAccent),
+                      title: Text(expense['type'],
+                          style: const TextStyle(color: Colors.white)),
+                      trailing: Text("৳${expense['amount'].toStringAsFixed(2)}",
+                          style: const TextStyle(color: Colors.amber)),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.black,
         shape: const CircularNotchedRectangle(),
@@ -72,14 +232,12 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                 );
               }),
               _buildNavItem(Icons.pie_chart, "Charts", false, () {
-                // Pass totalBudget and the mapped expenses to the ChartPage
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ChartPage(
-                      totalBudget: totalBudget, // Pass total budget
-                      expenses: _convertExpensesToCategoryMap(
-                          expenses), // Pass mapped expenses
+                      monthlyBudget: totalBudget,
+                      expenses: _convertExpensesToCategoryMap(expenses),
                     ),
                   ),
                 );
@@ -88,30 +246,26 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ReportsPage(expenses: expenses), // Pass data if needed
+                    builder: (context) => ReportsPage(expenses: expenses),
                   ),
                 );
               }),
-
-              // FloatingActionButton positioned at the last place
               Padding(
-                padding: const EdgeInsets.only(left: 20), // Keep the spacing
-                child: FloatingActionButton(
+                padding: const EdgeInsets.only(left: 20),
+                child: FloatingActionButton.extended(
                   onPressed: () {
                     _showAddExpenseDialog();
                   },
                   backgroundColor: const Color.fromARGB(255, 80, 72, 226),
-                  shape: const CircleBorder(),
-                  child: const Icon(Icons.add,
-                      color: Color.fromARGB(255, 15, 15, 15), size: 30),
+                  icon: const Icon(Icons.add, color: Colors.black, size: 24),
+                  label:
+                      const Text("Add", style: TextStyle(color: Colors.black)),
                 ),
               ),
             ],
           ),
         ),
       ),
-
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
@@ -123,6 +277,10 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.grey[900],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
@@ -136,7 +294,10 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
             children: [
               const Text(
                 "Add Expense",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               const SizedBox(height: 10),
               TextField(
@@ -156,7 +317,7 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
 
                   if (type.isNotEmpty && amount != null) {
                     _addExpense(type, amount);
-                    Navigator.pop(context); // Close modal
+                    Navigator.pop(context);
                   }
                 },
                 child: const Text("Add"),
@@ -164,6 +325,90 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
               const SizedBox(height: 10),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _showUpdateBudgetDialog() {
+    TextEditingController budgetController =
+        TextEditingController(text: totalBudget.toString());
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Update Monthly Budget"),
+          content: TextField(
+            controller: budgetController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: "Monthly Budget",
+              prefixText: "৳",
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final enteredBudget = double.tryParse(budgetController.text);
+                if (enteredBudget != null && enteredBudget > 0) {
+                  setState(() {
+                    totalBudget = enteredBudget;
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text("Update"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showUpdateDailyBudgetDialog() {
+    TextEditingController budgetController =
+        TextEditingController(text: dailyBudget.toString());
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Update daily Budget"),
+          content: TextField(
+            controller: budgetController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: "Daily Budget",
+              prefixText: "৳",
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final enteredBudget = double.tryParse(budgetController.text);
+                if (enteredBudget != null && enteredBudget > 0) {
+                  setState(() {
+                    dailyBudget = enteredBudget;
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text("Update"),
+            ),
+          ],
         );
       },
     );
