@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:project/pages/TaskManager/task_model.dart';
 import 'package:project/pages/TaskManager/task_widget.dart';
-import 'package:project/pages/Notifications/notification_page.dart'; // Import NotificationsPage
+import 'package:project/pages/Notifications/notification_page.dart';
 
 class TaskListPage extends StatefulWidget {
   const TaskListPage({super.key});
@@ -13,37 +15,120 @@ class TaskListPage extends StatefulWidget {
 class _TaskListPageState extends State<TaskListPage> {
   List<Task> taskList = [];
   final TextEditingController _taskController = TextEditingController();
+  User? currentUser;
 
   @override
   void initState() {
     super.initState();
-    taskList = Task.taskList();
-  }
-
-  void toggleTaskStatus(Task task) {
-    setState(() {
-      task.isDone = !task.isDone;
+    currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      fetchTasksFromFirestore();
+    }
+    // You may want to listen to auth changes too if user can sign in/out while on this page
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        setState(() {
+          currentUser = user;
+          fetchTasksFromFirestore();
+        });
+      } else {
+        setState(() {
+          currentUser = null;
+          taskList.clear();
+        });
+      }
     });
   }
 
-  void deleteTask(Task task) {
+  void fetchTasksFromFirestore() async {
+    if (currentUser == null) return;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('tasks')
+        .get();
+
+    final tasks = snapshot.docs.map((doc) {
+      final data = doc.data();
+      return Task(
+        id: doc.id,
+        taskText: data['taskText'] ?? '',
+        startTime: data['startTime'] != null
+            ? (data['startTime'] as Timestamp).toDate()
+            : null,
+        endTime: data['endTime'] != null
+            ? (data['endTime'] as Timestamp).toDate()
+            : null,
+        isDone: data['isDone'] ?? false,
+      );
+    }).toList();
+
+    setState(() {
+      taskList = tasks;
+    });
+  }
+
+  void toggleTaskStatus(Task task) async {
+    if (currentUser == null) return;
+
+    setState(() {
+      task.isDone = !task.isDone;
+    });
+
+    // Update Firestore document
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('tasks')
+        .doc(task.id)
+        .update({'isDone': task.isDone});
+  }
+
+  void deleteTask(Task task) async {
+    if (currentUser == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('tasks')
+        .doc(task.id)
+        .delete();
+
     setState(() {
       taskList.remove(task);
     });
   }
 
-  void addTask(String task, DateTime startTime, DateTime endTime) {
-    if (task.isNotEmpty) {
-      setState(() {
-        taskList.add(Task(
-          id: DateTime.now().toString(),
-          taskText: task,
-          startTime: startTime,
-          endTime: endTime,
-        ));
-      });
-      _taskController.clear();
-    }
+  void addTask(String taskText, DateTime startTime, DateTime endTime) async {
+    if (currentUser == null || taskText.isEmpty) return;
+
+    final taskData = {
+      'taskText': taskText,
+      'startTime': Timestamp.fromDate(startTime),
+      'endTime': Timestamp.fromDate(endTime),
+      'isDone': false,
+    };
+
+    final docRef = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('tasks')
+        .add(taskData);
+
+    final newTask = Task(
+      id: docRef.id,
+      taskText: taskText,
+      startTime: startTime,
+      endTime: endTime,
+      isDone: false,
+    );
+
+    setState(() {
+      taskList.add(newTask);
+    });
+
+    _taskController.clear();
   }
 
   void _showAddTaskDialog() {
@@ -80,7 +165,7 @@ class _TaskListPageState extends State<TaskListPage> {
                   ListTile(
                     title: Text(selectedStartTime == null
                         ? "Select Start Time"
-                        : "Start: ${selectedStartTime!.hour}:${selectedStartTime!.minute}"),
+                        : "Start: ${selectedStartTime!.hour}:${selectedStartTime!.minute.toString().padLeft(2, '0')}"),
                     trailing: const Icon(Icons.timer, color: Colors.blue),
                     onTap: () async {
                       TimeOfDay? picked = await showTimePicker(
@@ -103,7 +188,7 @@ class _TaskListPageState extends State<TaskListPage> {
                   ListTile(
                     title: Text(selectedEndTime == null
                         ? "Select End Time"
-                        : "End: ${selectedEndTime!.hour}:${selectedEndTime!.minute}"),
+                        : "End: ${selectedEndTime!.hour}:${selectedEndTime!.minute.toString().padLeft(2, '0')}"),
                     trailing: const Icon(Icons.timer_off, color: Colors.red),
                     onTap: () async {
                       TimeOfDay? picked = await showTimePicker(
@@ -157,6 +242,14 @@ class _TaskListPageState extends State<TaskListPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (currentUser == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text('Please sign in to see your tasks'),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white30,
       appBar: AppBar(
