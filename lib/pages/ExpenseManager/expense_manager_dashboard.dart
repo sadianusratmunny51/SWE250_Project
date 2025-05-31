@@ -5,7 +5,7 @@ import 'package:project/pages/ExpenseManager/expense_reports_page.dart';
 import 'package:project/pages/ExpenseManager/expense_chart_page.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // <== FIRESTORE IMPORT
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ExpenseDashboard extends StatefulWidget {
   const ExpenseDashboard({super.key});
@@ -18,19 +18,13 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
   String? uid;
 
   List<Map<String, dynamic>> expenses = [];
-  double totalBudget = 0000.0;
+  double totalBudget = 0.0;
 
-  // New: Track selected date for daily budget and expenses
+  // Track selected date for daily budget and expenses
   DateTime selectedDate = DateTime.now();
 
   // Daily budget per selected date
   double dailyBudget = 0.0;
-
-  void _addExpense(String type, double amount) {
-    setState(() {
-      expenses.add({"type": type, "amount": amount, "date": selectedDate});
-    });
-  }
 
   @override
   void initState() {
@@ -41,6 +35,7 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
     if (uid != null) {
       _fetchExpenses();
       _fetchDailyBudgetForDate(selectedDate);
+      _fetchMonthlyBudgetForMonth(selectedDate);
     }
   }
 
@@ -131,6 +126,7 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                 });
                 _fetchDailyBudgetForDate(selectedDay);
                 _fetchExpenses();
+                _fetchMonthlyBudgetForMonth(selectedDay);
               },
             ),
             Row(
@@ -259,7 +255,7 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => RecordsPage(expenses: expenses),
+                    builder: (context) => const RecordsPage(),
                   ),
                 );
               }),
@@ -311,9 +307,85 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
     );
   }
 
+  Future<void> _fetchExpenses() async {
+    if (uid == null) return;
+
+    try {
+      final QuerySnapshot<Map<String, dynamic>> querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection('expenses')
+              .get();
+
+      List<Map<String, dynamic>> fetchedExpenses = [];
+
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+        final timestamp = data['date'];
+        DateTime date = timestamp is Timestamp
+            ? timestamp.toDate()
+            : DateTime.tryParse(timestamp.toString()) ?? DateTime.now();
+
+        fetchedExpenses.add({
+          'type': data['type'] ?? '',
+          'amount': (data['amount'] ?? 0).toDouble(),
+          'date': date,
+        });
+      }
+
+      setState(() {
+        expenses = fetchedExpenses;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching expenses: $e");
+      }
+    }
+  }
+
+  Future<void> _fetchDailyBudgetForDate(DateTime date) async {
+    if (uid == null) return;
+
+    final dayKey =
+        "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('dailyBudgets')
+        .doc(dayKey)
+        .get();
+
+    setState(() {
+      dailyBudget = (doc.exists && doc.data()?['amount'] != null)
+          ? (doc.data()!['amount'] as num).toDouble()
+          : 0.0;
+    });
+  }
+
+  Future<void> _fetchMonthlyBudgetForMonth(DateTime date) async {
+    if (uid == null) return;
+
+    final monthKey = "${date.year}-${date.month.toString().padLeft(2, '0')}";
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('monthlyBudgets')
+        .doc(monthKey)
+        .get();
+
+    setState(() {
+      totalBudget = (doc.exists && doc.data()?['amount'] != null)
+          ? (doc.data()!['amount'] as num).toDouble()
+          : 0.0;
+    });
+  }
+
   void _showAddExpenseDialog() {
-    TextEditingController typeController = TextEditingController();
-    TextEditingController amountController = TextEditingController();
+    final TextEditingController typeController = TextEditingController();
+    final TextEditingController amountController = TextEditingController();
 
     showDialog(
       context: context,
@@ -337,38 +409,38 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text("Cancel"),
             ),
             ElevatedButton(
               onPressed: () async {
-                final type = typeController.text.trim();
-                final amount = double.tryParse(amountController.text.trim());
+                try {
+                  final type = typeController.text.trim();
+                  final amount = double.tryParse(amountController.text.trim());
+                  if (type.isNotEmpty &&
+                      amount != null &&
+                      amount > 0 &&
+                      uid != null) {
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(uid)
+                        .collection('expenses')
+                        .add({
+                      'type': type,
+                      'amount': amount,
+                      'date': Timestamp.fromDate(selectedDate),
+                    });
 
-                if (type.isNotEmpty &&
-                    amount != null &&
-                    amount > 0 &&
-                    uid != null) {
-                  // Save to Firestore with selectedDate as date
-                  await FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(uid)
-                      .collection('expenses')
-                      .add({
-                    'type': type,
-                    'amount': amount,
-                    'date': Timestamp.fromDate(selectedDate),
-                  });
+                    await _fetchExpenses();
+                    await _fetchDailyBudgetForDate(selectedDate);
+                    await _fetchMonthlyBudgetForMonth(selectedDate);
 
-                  // Update local list
-                  setState(() {
-                    expenses.add(
-                        {"type": type, "amount": amount, "date": selectedDate});
-                  });
-
-                  Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  }
+                } catch (e) {
+                  if (kDebugMode) {
+                    print("Error adding expense: $e");
+                  }
                 }
               },
               child: const Text("Add"),
@@ -381,7 +453,7 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
 
   void _showUpdateBudgetDialog() {
     TextEditingController budgetController =
-        TextEditingController(text: totalBudget.toString());
+        TextEditingController(text: totalBudget.toStringAsFixed(2));
 
     showDialog(
       context: context,
@@ -398,35 +470,35 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text("Cancel"),
             ),
             ElevatedButton(
               onPressed: () async {
                 try {
-                  final enteredBudget = double.tryParse(budgetController.text);
+                  final enteredBudget =
+                      double.tryParse(budgetController.text.trim());
                   if (enteredBudget != null &&
-                      enteredBudget > 0 &&
+                      enteredBudget >= 0 &&
                       uid != null) {
+                    final monthKey =
+                        "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}";
+
                     await FirebaseFirestore.instance
                         .collection('users')
                         .doc(uid)
-                        .set({'monthlyBudget': enteredBudget},
-                            SetOptions(merge: true));
+                        .collection('monthlyBudgets')
+                        .doc(monthKey)
+                        .set({'amount': enteredBudget});
 
-                    await _fetchExpenses();
+                    await _fetchMonthlyBudgetForMonth(selectedDate);
 
-                    Navigator.of(context).pop(); // ✅ Close dialog after success
-                  } else {
-                    // _showError("Please enter a valid amount.");
+                    Navigator.of(context).pop();
                   }
                 } catch (e) {
                   if (kDebugMode) {
                     print("Error updating monthly budget: $e");
                   }
-                  //_showError("Something went wrong. Try again.");
                 }
               },
               child: const Text("Update"),
@@ -438,8 +510,8 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
   }
 
   void _showUpdateDailyBudgetDialog() {
-    TextEditingController budgetController =
-        TextEditingController(text: dailyBudget.toString());
+    TextEditingController dailyBudgetController =
+        TextEditingController(text: dailyBudget.toStringAsFixed(2));
 
     showDialog(
       context: context,
@@ -447,7 +519,7 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
         return AlertDialog(
           title: const Text("Update Daily Budget"),
           content: TextField(
-            controller: budgetController,
+            controller: dailyBudgetController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: const InputDecoration(
               labelText: "Daily Budget",
@@ -456,39 +528,35 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text("Cancel"),
             ),
             ElevatedButton(
               onPressed: () async {
                 try {
-                  final enteredBudget = double.tryParse(budgetController.text);
-                  if (enteredBudget != null &&
-                      enteredBudget > 0 &&
+                  final enteredDailyBudget =
+                      double.tryParse(dailyBudgetController.text.trim());
+                  if (enteredDailyBudget != null &&
+                      enteredDailyBudget >= 0 &&
                       uid != null) {
-                    final dateKey =
+                    final dayKey =
                         "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
 
                     await FirebaseFirestore.instance
                         .collection('users')
                         .doc(uid)
                         .collection('dailyBudgets')
-                        .doc(dateKey)
-                        .set({'amount': enteredBudget});
+                        .doc(dayKey)
+                        .set({'amount': enteredDailyBudget});
 
                     await _fetchDailyBudgetForDate(selectedDate);
 
-                    Navigator.of(context).pop(); // ✅ Close dialog after success
-                  } else {
-                    //_showError("Please enter a valid amount.");
+                    Navigator.of(context).pop();
                   }
                 } catch (e) {
                   if (kDebugMode) {
                     print("Error updating daily budget: $e");
                   }
-                  //_showError("Something went wrong. Try again.");
                 }
               },
               child: const Text("Update"),
@@ -497,54 +565,5 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
         );
       },
     );
-  }
-
-  Future<void> _fetchExpenses() async {
-    if (uid == null) return;
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('expenses')
-        .get();
-
-    setState(() {
-      expenses = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
-          'type': data['type'] ?? 'Unknown',
-          'amount': (data['amount'] ?? 0).toDouble(),
-          'date': (data['date'] as Timestamp).toDate(),
-        };
-      }).toList();
-    });
-
-    final userDoc =
-        await FirebaseFirestore.instance.collection('users').doc(uid).get();
-    if (userDoc.exists && userDoc.data() != null) {
-      setState(() {
-        totalBudget = (userDoc.data()!['monthlyBudget'] ?? 0).toDouble();
-      });
-    }
-  }
-
-  Future<void> _fetchDailyBudgetForDate(DateTime date) async {
-    if (uid == null) return;
-
-    final dateKey =
-        "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('dailyBudgets')
-        .doc(dateKey)
-        .get();
-
-    setState(() {
-      dailyBudget = (doc.exists && doc.data()?['amount'] != null)
-          ? (doc.data()!['amount'] as num).toDouble()
-          : 0.0;
-    });
   }
 }
