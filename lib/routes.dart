@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project/pages/Location/TrackMePage.dart';
 import 'package:project/pages/Notifications/notification_page.dart';
 import 'pages/login.dart';
 import 'pages/dashboard_page.dart';
@@ -17,5 +18,6 @@ class AppRoutes {
     '/tasks': (context) => const TaskListPage(),
     //'/reminders': (context) => const NotificationsPage(),
     '/profile': (context) => ProfilePage(),
+    //  '/trackme': (context) => TrackMePage(),
   };
 }

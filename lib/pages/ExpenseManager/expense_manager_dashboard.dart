@@ -271,7 +271,7 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ReportsPage(expenses: expenses),
+                    builder: (context) => ReportsPage(),
                   ),
                 );
               }),
