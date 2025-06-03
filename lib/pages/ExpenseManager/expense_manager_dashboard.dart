@@ -263,10 +263,7 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChartPage(
-                      monthlyBudget: totalBudget,
-                      expenses: _convertExpensesToCategoryMap(expenses),
-                    ),
+                    builder: (context) => ChartPage(),
                   ),
                 );
               }),
@@ -430,12 +427,12 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                       'amount': amount,
                       'date': Timestamp.fromDate(selectedDate),
                     });
-
+                    Navigator.of(context).pop();
                     await _fetchExpenses();
                     await _fetchDailyBudgetForDate(selectedDate);
                     await _fetchMonthlyBudgetForMonth(selectedDate);
 
-                    Navigator.of(context).pop();
+                    //  Navigator.of(context).pop();
                   }
                 } catch (e) {
                   if (kDebugMode) {
@@ -490,10 +487,11 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                         .collection('monthlyBudgets')
                         .doc(monthKey)
                         .set({'amount': enteredBudget});
+                    Navigator.of(context).pop();
 
                     await _fetchMonthlyBudgetForMonth(selectedDate);
 
-                    Navigator.of(context).pop();
+                    //  Navigator.of(context).pop();
                   }
                 } catch (e) {
                   if (kDebugMode) {
@@ -549,9 +547,11 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
                         .doc(dayKey)
                         .set({'amount': enteredDailyBudget});
 
+                    Navigator.of(context).pop();
+
                     await _fetchDailyBudgetForDate(selectedDate);
 
-                    Navigator.of(context).pop();
+                    //  Navigator.of(context).pop();
                   }
                 } catch (e) {
                   if (kDebugMode) {
