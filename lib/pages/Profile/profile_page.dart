@@ -6,184 +6,339 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String name = "Sadia nusrat munni";
-  String email = "sadiamunny51@gmail.com";
-
-  void _editProfile() {
-    TextEditingController nameController = TextEditingController(text: name);
-    TextEditingController emailController = TextEditingController(text: email);
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Edit Profile"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(labelText: "Name"),
-            ),
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(labelText: "Email"),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                name = nameController.text;
-                email = emailController.text;
-              });
-              Navigator.pop(context);
-            },
-            child: Text("Save"),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 1, 33, 57),
-      appBar: AppBar(
-        title: Text("Profile", style: TextStyle(color: Colors.white)),
-        centerTitle: true,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.deepPurple, Colors.purpleAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 20),
-            _buildProfilePicture(),
-            SizedBox(height: 20),
-            _buildUserInfo(),
-            SizedBox(height: 20),
-            _buildSettingsSection(),
-            SizedBox(height: 20),
-            _buildLogoutButton(),
-          ],
-        ),
+      backgroundColor: Colors.grey[900],
+      body: Column(
+        children: [
+          _buildTopProfileSection(),
+          Expanded(child: _buildBottomContent()),
+        ],
       ),
     );
   }
 
-  Widget _buildProfilePicture() {
-    return Center(
-      child: Stack(
+  Widget _buildTopProfileSection() {
+    return Container(
+      width: double.infinity,
+      height: 260,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blueAccent, Colors.indigoAccent],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(40),
+          bottomRight: Radius.circular(40),
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircleAvatar(
-            radius: 60,
-            backgroundColor: Colors.white,
+            radius: 45,
             backgroundImage: AssetImage("assets/images/image.jpeg"),
           ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: _editProfile,
-              child: CircleAvatar(
-                backgroundColor: Colors.blue,
-                radius: 18,
-                child: Icon(Icons.edit, color: Colors.white, size: 18),
-              ),
-            ),
+          SizedBox(height: 12),
+          Text(
+            "Nick Edward",
+            style: TextStyle(
+                color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            "nickedward@gmail.com",
+            style: TextStyle(color: Colors.white70),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildUserInfo() {
-    return Column(
+  Widget _buildBottomContent() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          SizedBox(height: 20),
+          _buildActionChips(),
+          SizedBox(height: 20),
+          _buildInfoFields(),
+          SizedBox(height: 30),
+          _buildLogoutButton(),
+          SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionChips() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Text(
-          name,
-          style: TextStyle(
-              fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        SizedBox(height: 5),
-        Text(
-          email,
-          style: TextStyle(
-              fontSize: 16, color: Colors.white, fontStyle: FontStyle.italic),
-        ),
+        _roundedOption("Edit profile", Icons.edit, () {
+          _showEditProfileSheet(context);
+        }),
+        _roundedOption("Edit image", Icons.image, () {}),
+        _roundedOption("Help", Icons.help_outline, () {}),
       ],
     );
   }
 
-  Widget _buildSettingsSection() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
+  Widget _roundedOption(String label, IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 100,
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.deepPurpleAccent, Colors.indigoAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black54,
+              blurRadius: 6,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              padding: EdgeInsets.all(8),
+              child: Icon(icon, size: 22, color: Colors.white),
+            ),
+            SizedBox(height: 6),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoFields() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey[850],
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8)],
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSettingsOption(Icons.person, "Edit Profile", _editProfile),
-          _buildSettingsOption(Icons.lock, "Change Password", () {}),
-          _buildSettingsOption(Icons.notifications, "Notifications", () {}),
-          _buildSettingsOption(Icons.help, "Help & Support", () {}),
+          Text(
+            "Personal Info",
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 16),
+
+          // 🔻 Sub-container for each field 🔻
+          _infoCard("User name", "Nick Edward"),
+          _infoCard("Email", "nick@example.com"),
+          _infoCard("Password", "********"),
+          _infoCard("Phone", "+1 234 567 8901"),
         ],
       ),
     );
   }
 
-  Widget _buildSettingsOption(IconData icon, String title, VoidCallback onTap) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.purple),
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.w600)),
-        trailing: Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
-        onTap: onTap,
+  Widget _infoCard(String title, String value) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[800],
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 4)],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.redAccent,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              style: TextStyle(color: Colors.white, fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoItem(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.redAccent,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              style: TextStyle(color: Colors.white, fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildLogoutButton() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: ElevatedButton(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        gradient: LinearGradient(
+          colors: [Colors.teal, Colors.teal],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.teal.withOpacity(0.5),
+            blurRadius: 10,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ElevatedButton.icon(
         style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 14),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: Colors.red,
-          elevation: 5,
-          shadowColor: Colors.black54,
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
         ),
         onPressed: () {
-          // Logout function
+          // Logout logic
         },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.logout, color: Colors.white),
-            SizedBox(width: 10),
-            Text("Logout",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
-          ],
+        icon: Icon(Icons.logout, color: Colors.white),
+        label: Text(
+          "Logout",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 0.8,
+          ),
         ),
       ),
+    );
+  }
+
+  void _showEditProfileSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      backgroundColor: Colors.grey[900],
+      builder: (context) {
+        final TextEditingController nameController =
+            TextEditingController(text: "Nick Edward");
+        final TextEditingController phoneController =
+            TextEditingController(text: "+1 234 567 8901");
+
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Edit Profile",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+              SizedBox(height: 20),
+              TextField(
+                controller: nameController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey[800],
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              SizedBox(height: 15),
+              TextField(
+                controller: phoneController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Phone',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey[800],
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  // Save logic here
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: Text("Save"),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

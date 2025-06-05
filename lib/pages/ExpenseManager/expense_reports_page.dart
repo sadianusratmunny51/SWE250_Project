@@ -14,7 +14,7 @@ class _ReportsPageState extends State<ReportsPage> {
   DateTime selectedMonth = DateTime.now();
   double monthlyBudget = 0.0;
   List<Map<String, dynamic>> expenses = [];
-  Map<String, double> dailyBudgets = {}; // date string -> budget
+  Map<String, double> dailyBudgets = {};
   String biggestCategory = '-';
   String leastCategory = '-';
   List<String> daysUnderBudget = [];
@@ -36,22 +36,19 @@ class _ReportsPageState extends State<ReportsPage> {
 
     final userDoc = FirebaseFirestore.instance.collection('users').doc(uid);
 
-    // ✅ Fetch monthly budget from monthlyBudgets subcollection
     final monthKey = DateFormat('yyyy-MM').format(selectedMonth);
     final monthSnapshot =
         await userDoc.collection('monthlyBudgets').doc(monthKey).get();
     monthlyBudget = (monthSnapshot.data()?['amount'] ?? 0).toDouble();
 
-    // ✅ Fetch daily budgets
     final dailyBudgetSnapshots = await userDoc.collection('dailyBudgets').get();
     dailyBudgets.clear();
     for (var doc in dailyBudgetSnapshots.docs) {
-      final dateStr = doc.id; // should be yyyy-MM-dd
+      final dateStr = doc.id; // yyyy-MM-dd
       final amount = (doc.data()['amount'] ?? 0).toDouble();
       dailyBudgets[dateStr] = amount;
     }
 
-    // ✅ Fetch expenses
     final expenseSnapshots = await userDoc.collection('expenses').get();
     expenses = expenseSnapshots.docs.where((doc) {
       final data = doc.data();
