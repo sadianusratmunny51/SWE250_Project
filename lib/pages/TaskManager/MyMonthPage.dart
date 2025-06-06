@@ -19,7 +19,7 @@ class _MyMonthPageState extends State<MyMonthPage> {
   int selectedMonthIndex = DateTime.now().month - 1;
   int selectedYear = DateTime.now().year;
 
-  Map<String, String> _events = {}; // key: yyyy-MM-dd, value: title
+  Map<String, String> _events = {};
 
   String get userId => FirebaseAuth.instance.currentUser!.uid;
 
