@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:project/pages/Graphical_Insights/ActivityDashboardPage.dart';
 
 class GraphicalInsightsPage extends StatelessWidget {
   const GraphicalInsightsPage({super.key});
@@ -98,7 +99,14 @@ class GraphicalInsightsPage extends StatelessWidget {
                       const Color.fromARGB(255, 190, 177, 225),
                       Colors.indigoAccent
                     ],
-                    onTap: () => print("Analyze Activity tapped"),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const ActivityDashboardPage()),
+                      );
+                    },
                   ),
                   _glassBox(
                     context,
