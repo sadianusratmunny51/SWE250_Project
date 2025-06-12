@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:project/pages/Graphical_Insights/ActivityDashboardPage.dart';
+import 'package:project/pages/Graphical_Insights/SpendingsDasboard.dart';
 
 class GraphicalInsightsPage extends StatelessWidget {
   const GraphicalInsightsPage({super.key});
@@ -118,7 +119,13 @@ class GraphicalInsightsPage extends StatelessWidget {
                       Colors.tealAccent.shade200,
                       Colors.greenAccent.shade400
                     ],
-                    onTap: () => print("Analyze Spendings tapped"),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SpendingsDashboard()),
+                      );
+                    },
                   ),
                 ],
               ),

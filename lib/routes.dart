@@ -20,6 +20,6 @@ class AppRoutes {
     //'/reminders': (context) => const NotificationsPage(),
     '/profile': (context) => ProfilePage(),
     //  '/trackme': (context) => TrackMePage(),
-    '/insights': (context) => GraphicalInsightsPage(),
+    '/insights': (context) => const GraphicalInsightsPage()
   };
 }

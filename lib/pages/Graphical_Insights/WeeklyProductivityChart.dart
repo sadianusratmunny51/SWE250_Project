@@ -1,4 +1,3 @@
-// Add this after your ActivityDashboardPage widget class
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -92,7 +91,6 @@ class _WeeklyProductivityChartState extends State<WeeklyProductivityChart> {
       (index) => FlSpot(index.toDouble(), _barGroups[index].barRods[0].toY),
     );
 
-    // You can customize this color list based on a theme or user preference
     final List<Color> gradientColors = [
       const Color.fromARGB(255, 170, 155, 212),
       const Color.fromARGB(255, 122, 135, 209),

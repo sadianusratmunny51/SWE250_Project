@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -6,6 +8,45 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  String userEmail = '';
+  String userName = '';
+  String userPhone = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        setState(() {
+          userEmail = doc.data()?['email'] ?? user.email ?? '';
+          userName = doc.data()?['name'] ?? '';
+          userPhone = doc.data()?['phone'] ?? '';
+        });
+      } else {
+        // If user doc doesn't exist, create one
+        await _firestore.collection('users').doc(user.uid).set({
+          'email': user.email,
+          'name': '',
+          'phone': '',
+        });
+        setState(() {
+          userEmail = user.email ?? '';
+          userName = '';
+          userPhone = '';
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,12 +84,15 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           SizedBox(height: 12),
           Text(
-            "Nick Edward",
+            userName.isEmpty ? "No Name" : userName,
             style: TextStyle(
-                color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           Text(
-            "nickedward@gmail.com",
+            userEmail,
             style: TextStyle(color: Colors.white70),
           ),
         ],
@@ -157,12 +201,9 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           SizedBox(height: 16),
-
-          // 🔻 Sub-container for each field 🔻
-          _infoCard("User name", "Nick Edward"),
-          _infoCard("Email", "nick@example.com"),
-          _infoCard("Password", "********"),
-          _infoCard("Phone", "+1 234 567 8901"),
+          _infoCard("User name", userName),
+          _infoCard("Email", userEmail),
+          _infoCard("Phone", userPhone),
         ],
       ),
     );
@@ -177,33 +218,6 @@ class _ProfilePageState extends State<ProfilePage> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 4)],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.redAccent,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-          Flexible(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.white, fontSize: 14),
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.right,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoItem(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -254,8 +268,9 @@ class _ProfilePageState extends State<ProfilePage> {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        onPressed: () {
-          // Logout logic
+        onPressed: () async {
+          await _auth.signOut();
+          // Navigate to login page if needed
         },
         icon: Icon(Icons.logout, color: Colors.white),
         label: Text(
@@ -272,14 +287,12 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showEditProfileSheet(BuildContext context) {
-    final TextEditingController nameController =
-        TextEditingController(text: "Nick Edward");
-    final TextEditingController phoneController =
-        TextEditingController(text: "+1 234 567 8901");
+    final nameController = TextEditingController(text: userName);
+    final phoneController = TextEditingController(text: userPhone);
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Important for full height with keyboard
+      isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
@@ -363,9 +376,24 @@ class _ProfilePageState extends State<ProfilePage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Save logic here, e.g. call setState or API
-                        Navigator.pop(context);
+                      onPressed: () async {
+                        final user = _auth.currentUser;
+                        if (user != null) {
+                          await _firestore
+                              .collection('users')
+                              .doc(user.uid)
+                              .update({
+                            'name': nameController.text,
+                            'phone': phoneController.text,
+                          });
+
+                          setState(() {
+                            userName = nameController.text;
+                            userPhone = phoneController.text;
+                          });
+
+                          Navigator.pop(context);
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal,

@@ -77,7 +77,6 @@ class _ActivityDashboardPageState extends State<ActivityDashboardPage> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       builder: (context, child) {
-        // Dark theme for date picker
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
@@ -222,8 +221,7 @@ class _ActivityDashboardPageState extends State<ActivityDashboardPage> {
     String formattedDate = DateFormat.yMMMMd().format(_selectedDate);
 
     return Scaffold(
-      backgroundColor: const Color(
-          0xFF1E1E2C), // Dark elegant background with a hint of blue/purple
+      backgroundColor: const Color(0xFF1E1E2C),
       appBar: AppBar(
         title: const Text("Activity Insights"),
         centerTitle: true,
@@ -341,10 +339,8 @@ class _ActivityDashboardPageState extends State<ActivityDashboardPage> {
 
             const SizedBox(height: 36),
 
-            // This Week's Productivity Section Title + Graph Container
             _sectionTitle("This Week's Productivity"),
-            const SizedBox(
-                height: 16), // Added gap here between title and graph container
+            const SizedBox(height: 16),
             //padding: const EdgeInsets.all(16),
             const WeeklyProductivityChart(),
             // Container(
