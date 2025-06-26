@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -14,6 +18,9 @@ class _ProfilePageState extends State<ProfilePage> {
   String userEmail = '';
   String userName = '';
   String userPhone = '';
+  String imageUrl = '';
+
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -30,20 +37,59 @@ class _ProfilePageState extends State<ProfilePage> {
           userEmail = doc.data()?['email'] ?? user.email ?? '';
           userName = doc.data()?['name'] ?? '';
           userPhone = doc.data()?['phone'] ?? '';
+          imageUrl = doc.data()?['imageUrl'] ?? '';
         });
       } else {
-        // If user doc doesn't exist, create one
         await _firestore.collection('users').doc(user.uid).set({
           'email': user.email,
           'name': '',
           'phone': '',
+          'imageUrl': '',
         });
         setState(() {
           userEmail = user.email ?? '';
           userName = '';
           userPhone = '';
+          imageUrl = '';
         });
       }
+    }
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+
+    final imageBytes = await pickedFile.readAsBytes();
+    final base64Image = base64Encode(imageBytes);
+
+    final response = await http.post(
+      Uri.parse('https://api.imgur.com/3/image'),
+      headers: {
+        'Authorization': 'Client-ID 005bd33cc29e3ed',
+      },
+      body: {
+        'image': base64Image,
+        'type': 'base64',
+      },
+    );
+
+    final data = json.decode(response.body);
+    if (response.statusCode == 200 && data['success'] == true) {
+      final link = data['data']['link'];
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'imageUrl': link,
+        });
+        setState(() {
+          imageUrl = link;
+        });
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Image upload failed')),
+      );
     }
   }
 
@@ -55,6 +101,36 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           _buildTopProfileSection(),
           Expanded(child: _buildBottomContent()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomContent() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          SizedBox(height: 20),
+          _buildActionChips(),
+          SizedBox(height: 20),
+          _buildInfoFields(),
+          // if (imageUrl.isNotEmpty)
+          //   Container(
+          //     margin: EdgeInsets.symmetric(vertical: 20),
+          //     height: 150,
+          //     width: 150,
+          //     decoration: BoxDecoration(
+          //       borderRadius: BorderRadius.circular(16),
+          //       image: DecorationImage(
+          //         image: NetworkImage(imageUrl),
+          //         fit: BoxFit.cover,
+          //       ),
+          //     ),
+          //   ),
+          SizedBox(height: 30),
+          _buildLogoutButton(),
+          SizedBox(height: 20),
         ],
       ),
     );
@@ -80,7 +156,9 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           CircleAvatar(
             radius: 45,
-            backgroundImage: AssetImage("assets/images/image.jpeg"),
+            backgroundImage: imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl)
+                : AssetImage("assets/images/image.jpeg") as ImageProvider,
           ),
           SizedBox(height: 12),
           Text(
@@ -100,23 +178,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildBottomContent() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          SizedBox(height: 20),
-          _buildActionChips(),
-          SizedBox(height: 20),
-          _buildInfoFields(),
-          SizedBox(height: 30),
-          _buildLogoutButton(),
-          SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
   Widget _buildActionChips() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -124,7 +185,9 @@ class _ProfilePageState extends State<ProfilePage> {
         _roundedOption("Edit profile", Icons.edit, () {
           _showEditProfileSheet(context);
         }),
-        _roundedOption("Edit image", Icons.image, () {}),
+        _roundedOption("Edit image", Icons.image, () {
+          _pickAndUploadImage();
+        }),
         _roundedOption("Help", Icons.help_outline, () {}),
       ],
     );
