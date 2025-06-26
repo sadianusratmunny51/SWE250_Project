@@ -8,6 +8,7 @@ import 'package:project/pages/TaskManager/task_widget.dart';
 import 'package:project/pages/Notifications/notification_page.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:project/services/notification_service.dart';
 
 class TaskListPage extends StatefulWidget {
   const TaskListPage({super.key});
@@ -121,7 +122,7 @@ class _TaskListPageState extends State<TaskListPage> {
       'startTime': Timestamp.fromDate(startTime),
       'endTime': Timestamp.fromDate(endTime),
       'isDone': false,
-      'date': _formatDate(_selectedDay), // ✅ Save date string
+      'date': _formatDate(_selectedDay),
     };
 
     final docRef = await FirebaseFirestore.instance
@@ -143,6 +144,14 @@ class _TaskListPageState extends State<TaskListPage> {
     });
 
     _taskController.clear();
+
+    // ✅ Schedule notification when the task is added
+    await NotificationService.scheduleNotification(
+      id: docRef.id.hashCode, // unique ID
+      title: 'Task Reminder',
+      body: taskText,
+      scheduledTime: startTime,
+    );
   }
 
   void _showAddTaskDialog() {

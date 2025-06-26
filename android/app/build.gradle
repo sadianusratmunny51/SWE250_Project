@@ -13,10 +13,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8 // ✅ updated
         targetCompatibility = JavaVersion.VERSION_1_8 // ✅ updated
+        coreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8 // ✅ updated
+        jvmTarget = "1.8" // ✅ updated
     }
 
     defaultConfig {
@@ -38,8 +39,7 @@ flutter {
     source = "../.."
 }
 
-// dependencies {
-//     implementation 'com.google.firebase:firebase-auth:23.2.0' // ✅ fine
-// }
-
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4") // ✅ this one
+}
 // apply plugin: 'com.google.gms.google-services' // ✅ fine

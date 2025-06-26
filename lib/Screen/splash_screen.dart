@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:project/services/notification_service.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -15,7 +16,6 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // Initialize animation
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -23,8 +23,21 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animation = Tween<double>(begin: 0, end: 10).animate(_controller);
 
-    // Navigate to Login Screen after 4 seconds
-    Timer(const Duration(seconds: 4), () {
+    // 🔔 Show immediate notification
+    NotificationService.showImmediateTestNotification();
+
+    // 🕒 Schedule one for 4 seconds later (optional)
+    final now = DateTime.now().add(const Duration(seconds: 8));
+    print('🕒 Scheduling test notification for: $now');
+    NotificationService.scheduleNotification(
+      id: 1,
+      title: "Welcome!",
+      body: "Scheduled notification working ✅",
+      scheduledTime: now,
+    );
+
+    // ⏳ Delay navigation to give time for scheduled notification
+    Timer(const Duration(seconds: 10), () {
       Navigator.pushReplacementNamed(context, '/login');
     });
   }
@@ -43,7 +56,6 @@ class _SplashScreenState extends State<SplashScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // App Title
             const Text(
               "Starting the Application",
               style: TextStyle(
@@ -53,8 +65,6 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             const SizedBox(height: 30),
-
-            // Animated Loading Text
             AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
@@ -81,7 +91,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  // Animated letter builder function
   Widget _buildAnimatedLetter(String letter, int index) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -89,10 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
         animation: _animation,
         builder: (context, child) {
           return Transform.translate(
-            offset: Offset(
-                0,
-                _animation.value *
-                    (index % 2 == 0 ? 1 : -1)), // Alternate up/down animation
+            offset: Offset(0, _animation.value * (index % 2 == 0 ? 1 : -1)),
             child: Text(
               letter,
               style: const TextStyle(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:project/Screen/welcome_screen.dart';
 import 'package:project/pages/sign_up_page.dart';
+import 'package:project/services/notification_service.dart';
+import 'package:project/widgets/google_map.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -114,9 +116,63 @@ class _LoginPageState extends State<LoginPage> {
                       : const Text('Log in', style: TextStyle(fontSize: 18)),
                 ),
                 const SizedBox(height: 20),
+                const SizedBox(height: 20),
+
+// 🔔 Test notification button
+                ElevatedButton(
+                  onPressed: () async {
+                    final now = DateTime.now().add(const Duration(seconds: 10));
+                    print("🧪 Scheduling quick test at $now");
+
+                    await NotificationService.scheduleNotification(
+                      id: 9999,
+                      title: 'Test Notification',
+                      body:
+                          'This notification was scheduled for 10 seconds later.',
+                      scheduledTime: now,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orangeAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: const Text('🔔 Schedule Test Notification',
+                      style: TextStyle(fontSize: 16)),
+                ),
+
                 const Text('Or sign in with',
                     style: TextStyle(color: Colors.white70)),
                 const SizedBox(height: 15),
+                ElevatedButton(
+                  onPressed: () async {
+                    var pending =
+                        await NotificationService.getPendingNotifications();
+                    print("⌛ Pending alerts (${pending.length}):");
+                    for (var n in pending) {
+                      print('• id=${n.id}, title=${n.title}, body=${n.body}');
+                    }
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Checked console for pending notifications')),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: const Text('📋 Show Pending Notifications',
+                      style: TextStyle(fontSize: 16)),
+                ),
+
                 ElevatedButton.icon(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
@@ -129,6 +185,25 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   icon: const Icon(Icons.login),
                   label: const Text('Login with Google',
+                      style: TextStyle(fontSize: 16)),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyMapPage()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.cyan,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: const Text('📍 Show My Location on Map',
                       style: TextStyle(fontSize: 16)),
                 ),
                 const SizedBox(height: 20),

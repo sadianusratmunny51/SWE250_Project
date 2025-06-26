@@ -1,8 +1,23 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   package="com.example.project">
+
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+   
+
     <application
         android:label="project"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+        android:name="com.google.firebase.messaging.default_notification_channel_id"
+        android:value="task_channel_id" />
+        <meta-data android:name="com.google.android.geo.API_KEY"
+           android:value="AIzaSyBR4vnV52tJ2Cs0KukSGsYHh32Vj9ROpwU"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -30,6 +45,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        
+
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -37,11 +54,13 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
-            <data android:mimeType="text/plain"/>
-        </intent>
-    </queries>
-    
+    <intent>
+        <action android:name="android.content.pm.PackageInstaller.ACTION_SESSION_COMMITTED" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.PROCESS_TEXT"/>
+        <data android:mimeType="text/plain"/>
+    </intent>
+</queries>
 
 </manifest>
