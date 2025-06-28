@@ -2,9 +2,9 @@ class Task {
   String id;
   String taskText;
   bool isDone;
-  DateTime? startTime; // Add start time
-  DateTime? endTime; // Add end time
-  String? date; // NEW: date string in "YYYY-MM-DD" format
+  DateTime? startTime;
+  DateTime? endTime;
+  String? date;
 
   Task({
     required this.id,
@@ -12,7 +12,7 @@ class Task {
     this.isDone = false,
     this.startTime,
     this.endTime,
-    this.date, // add to constructor
+    this.date,
   });
 
   static List<Task> taskList() {

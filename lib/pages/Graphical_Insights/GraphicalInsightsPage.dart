@@ -22,7 +22,7 @@ class GraphicalInsightsPage extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple[700],
+        backgroundColor: Colors.deepPurple[600],
         elevation: 4,
       ),
       body: Container(

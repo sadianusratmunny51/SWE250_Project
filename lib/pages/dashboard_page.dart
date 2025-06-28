@@ -10,13 +10,13 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  String displayText = ''; // Animated title text
-  String descriptionText = ''; // Animated description text
-  String line1Text = ''; // Animated first line text
-  String line2Text = ''; // Animated second line text
-  int _currentBackgroundIndex = 0; // Index of the current background image
+  String displayText = '';
+  String descriptionText = '';
+  String line1Text = '';
+  String line2Text = '';
+  int _currentBackgroundIndex = 0;
 
-  // List of background images
+  //  background images
   final List<String> _backgroundImages = [
     'assets/images/back1.png',
     'assets/images/back2.png',
@@ -42,7 +42,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _startBackgroundRotation();
   }
 
-  // Animate the AppBar text
+  // AppBar text
   void _animateText() {
     const text = 'TrackEase Dashboard';
     int index = 0;
@@ -58,7 +58,7 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  // Animate the description text
+  //  description text
   void _animateDescriptionText(String text) {
     int index = 0;
     setState(() {
@@ -164,7 +164,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
               // Motivational Text Section
               Positioned(
-                bottom: 10, // Position for the Motivational Text
+                bottom: 10,
                 left: -140,
                 right: 20,
                 child: Column(
@@ -173,39 +173,18 @@ class _DashboardPageState extends State<DashboardPage> {
                     Text(
                       line1Text,
                       style: const TextStyle(
-                        color: Colors.blueAccent, // Color for the first line
+                        color: Colors.blueAccent,
                         fontSize: 20,
                         fontWeight: FontWeight.w400,
-                        fontStyle: FontStyle.italic, // Italic style
+                        fontStyle: FontStyle.italic,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 5),
-                    // Space between lines
-                    // const Text(
-                    //   "Additional Text here",
-                    //   style: TextStyle(
-                    //     color: Colors.green,
-                    //     fontSize: 16,
-                    //   ),
-                    //   textAlign: TextAlign.center,
-                    // ),
-
-                    // Second line of motivational text with typewriter effect
-                    // Text(
-                    //   line2Text,
-                    //   style: const TextStyle(
-                    //     color: Colors.white, // Color for the second line
-                    //     fontSize: 20,
-                    //     fontWeight: FontWeight.bold,
-                    //     fontStyle: FontStyle.italic, // Italic style
-                    //   ),
-                    //   textAlign: TextAlign.center,
-                    // ),
                   ],
                 ),
               ),
-              // const SizedBox(height: 5),
+
               Positioned(
                 bottom: -8, // Position for the Motivational Text
                 left: 140,
@@ -224,27 +203,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 5),
-                    // Space between lines
-                    // const Text(
-                    //   "Additional Text here",
-                    //   style: TextStyle(
-                    //     color: Colors.green,
-                    //     fontSize: 16,
-                    //   ),
-                    //   textAlign: TextAlign.center,
-                    // ),
-
-                    // Second line of motivational text with typewriter effect
-                    // Text(
-                    //   line2Text,
-                    //   style: const TextStyle(
-                    //     color: Colors.white, // Color for the second line
-                    //     fontSize: 20,
-                    //     fontWeight: FontWeight.bold,
-                    //     fontStyle: FontStyle.italic, // Italic style
-                    //   ),
-                    //   textAlign: TextAlign.center,
-                    // ),
                   ],
                 ),
               ),
@@ -318,11 +276,11 @@ class _DashboardPageState extends State<DashboardPage> {
                       title: "Graph",
                       color: Colors.purple,
                       route: '/insights'),
-                  _buildDashboardCard(context,
-                      icon: Icons.notifications,
-                      title: "Notifications",
-                      color: Colors.red,
-                      route: '/reminders'),
+                  // _buildDashboardCard(context,
+                  //     icon: Icons.notifications,
+                  //     title: "Notifications",
+                  //     color: Colors.red,
+                  //     route: '/reminders'),
                   _buildDashboardCard(context,
                       icon: Icons.person,
                       title: "Profile",

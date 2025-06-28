@@ -57,7 +57,9 @@ class _ReportsPageState extends State<ReportsPage> {
       final data = doc.data();
       return {
         'amount': (data['amount'] ?? 0).toDouble(),
-        'category': data['category'] ?? 'Uncategorized',
+        'category': (data['type'] as String?)?.trim().isNotEmpty == true
+            ? data['type'].toString().trim()
+            : 'Uncategorized',
         'date': (data['date'] as Timestamp).toDate(),
       };
     }).toList();
@@ -89,11 +91,14 @@ class _ReportsPageState extends State<ReportsPage> {
 
     totalSpent = monthExpenses.fold(0.0, (sum, item) => sum + item['amount']);
 
-    if (categoryTotals.isNotEmpty) {
-      final sorted = categoryTotals.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
-      biggestCategory = sorted.first.key;
-      leastCategory = sorted.last.key;
+    final filteredCategories = categoryTotals.entries
+        .where((e) => e.key.toLowerCase() != 'uncategorized' && e.value > 0)
+        .toList();
+
+    if (filteredCategories.isNotEmpty) {
+      filteredCategories.sort((a, b) => b.value.compareTo(a.value));
+      biggestCategory = filteredCategories.first.key;
+      leastCategory = filteredCategories.last.key;
     } else {
       biggestCategory = '-';
       leastCategory = '-';

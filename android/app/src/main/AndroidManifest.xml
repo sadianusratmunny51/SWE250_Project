@@ -11,7 +11,7 @@
     <application
         android:label="project"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <meta-data
         android:name="com.google.firebase.messaging.default_notification_channel_id"
         android:value="task_channel_id" />

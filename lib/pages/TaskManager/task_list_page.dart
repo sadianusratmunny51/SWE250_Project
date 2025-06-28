@@ -145,9 +145,9 @@ class _TaskListPageState extends State<TaskListPage> {
 
     _taskController.clear();
 
-    // ✅ Schedule notification when the task is added
+    // Schedule notification when the task is added
     await NotificationService.scheduleNotification(
-      id: docRef.id.hashCode, // unique ID
+      id: docRef.id.hashCode,
       title: 'Task Reminder',
       body: taskText,
       scheduledTime: startTime,
@@ -284,7 +284,7 @@ class _TaskListPageState extends State<TaskListPage> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white30,
+      backgroundColor: Colors.grey[850],
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.lightBlueAccent,
@@ -294,216 +294,215 @@ class _TaskListPageState extends State<TaskListPage> {
                 fontSize: 24,
                 fontWeight: FontWeight.bold)),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.black),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        NotificationsPage(taskList: taskList)),
-              );
-            },
-          )
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.notifications, color: Colors.black),
+        //     onPressed: () {
+        //       Navigator.push(
+        //         context,
+        //         MaterialPageRoute(
+        //             builder: (context) =>
+        //                 NotificationsPage(taskList: taskList)),
+        //       );
+        //     },
+        //   )
+        // ],
       ),
-      body: Stack(
+      body: Column(
         children: [
-          Column(
-            children: [
-              TableCalendar(
-                firstDay: DateTime.utc(2020, 1, 1),
-                lastDay: DateTime.utc(2030, 12, 31),
-                focusedDay: _focusedDay,
-                selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-                calendarFormat: CalendarFormat.week,
-                availableCalendarFormats: const {
-                  CalendarFormat.week: '1 Weeks',
-                },
-                daysOfWeekHeight: 40,
-                daysOfWeekStyle: const DaysOfWeekStyle(
-                  weekdayStyle: TextStyle(color: Colors.white),
-                  weekendStyle: TextStyle(color: Colors.redAccent),
-                ),
-                headerStyle: const HeaderStyle(
-                  formatButtonVisible: false,
-                  titleCentered: true,
-                  titleTextStyle: TextStyle(color: Colors.white),
-                  leftChevronIcon:
-                      Icon(Icons.chevron_left, color: Colors.white),
-                  rightChevronIcon:
-                      Icon(Icons.chevron_right, color: Colors.white),
-                ),
-                calendarBuilders: CalendarBuilders(
-                  defaultBuilder: (context, day, focusedDay) {
-                    final twoWeeksStart =
-                        focusedDay.subtract(const Duration(days: 7));
-                    final twoWeeksEnd = focusedDay.add(const Duration(days: 6));
-                    if (day.isBefore(twoWeeksStart) ||
-                        day.isAfter(twoWeeksEnd)) {
-                      return const SizedBox.shrink();
-                    }
-                    return Center(
-                      child: Text(
-                        '${day.day}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
-                  },
-                  todayBuilder: (context, day, focusedDay) {
-                    if (isSameDay(day, _selectedDay)) {
-                      return const SizedBox.shrink();
-                    }
-                    return Container(
-                      margin: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.orangeAccent.withOpacity(0.5),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${day.day}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    );
-                  },
-                  selectedBuilder: (context, day, focusedDay) {
-                    return Container(
-                      margin: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.blueAccent,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${day.day}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                onDaySelected: (selectedDay, focusedDay) {
-                  setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
-                  });
-                  fetchTasksFromFirestore();
-                },
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: taskList
-                      .map((task) => TaskItem(
-                            task: task,
-                            onTaskChanged: toggleTaskStatus,
-                            onDelete: deleteTask,
-                          ))
-                      .toList(),
-                ),
-              ),
-            ],
+          TableCalendar(
+            firstDay: DateTime.utc(2020, 1, 1),
+            lastDay: DateTime.utc(2030, 12, 31),
+            focusedDay: _focusedDay,
+            selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+            calendarFormat: CalendarFormat.week,
+            availableCalendarFormats: const {
+              CalendarFormat.week: '1 Weeks',
+            },
+            daysOfWeekHeight: 40,
+            daysOfWeekStyle: const DaysOfWeekStyle(
+              weekdayStyle: TextStyle(color: Colors.white),
+              weekendStyle: TextStyle(color: Colors.redAccent),
+            ),
+            headerStyle: const HeaderStyle(
+              formatButtonVisible: false,
+              titleCentered: true,
+              titleTextStyle: TextStyle(color: Colors.white),
+              leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
+              rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
+            ),
+            calendarBuilders: CalendarBuilders(
+              defaultBuilder: (context, day, focusedDay) {
+                final twoWeeksStart =
+                    focusedDay.subtract(const Duration(days: 7));
+                final twoWeeksEnd = focusedDay.add(const Duration(days: 6));
+                if (day.isBefore(twoWeeksStart) || day.isAfter(twoWeeksEnd)) {
+                  return const SizedBox.shrink();
+                }
+                return Center(
+                  child: Text(
+                    '${day.day}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                );
+              },
+              todayBuilder: (context, day, focusedDay) {
+                if (isSameDay(day, _selectedDay)) {
+                  return const SizedBox.shrink();
+                }
+                return Container(
+                  margin: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.orangeAccent.withOpacity(0.5),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${day.day}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                );
+              },
+              selectedBuilder: (context, day, focusedDay) {
+                return Container(
+                  margin: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.blueAccent,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${day.day}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
+                  ),
+                );
+              },
+            ),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+              });
+              fetchTasksFromFirestore();
+            },
           ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: Row(
-              children: [
-                // QuickLook Button (existing)
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => QuickLookPage()));
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.lightBlueAccent,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 4,
-                          offset: Offset(2, 2),
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.visibility, color: Colors.black, size: 20),
-                        SizedBox(width: 6),
-                        Text(
-                          'QuickLook',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 12), // space between buttons
-
-                // MyMonth Button (new smaller button)
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => MyMonthPage()));
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.lightBlueAccent,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 3,
-                          offset: Offset(1, 1),
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.calendar_month_outlined,
-                            color: Colors.black, size: 20),
-                        SizedBox(width: 6),
-                        Text(
-                          'MyMonth',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: taskList
+                  .map((task) => TaskItem(
+                        task: task,
+                        onTaskChanged: toggleTaskStatus,
+                        onDelete: deleteTask,
+                      ))
+                  .toList(),
             ),
           ),
         ],
       ),
+      extendBody: true,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
         child: const Icon(Icons.add, size: 30),
         backgroundColor: Colors.blueAccent,
         shape: const CircleBorder(),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        color: Colors.blueGrey[800],
+        height: 60.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // QuickLook Button
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => QuickLookPage()));
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey[700],
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.4),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    )
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.visibility,
+                        color: Colors.white, size: 20), // White icon
+                    SizedBox(width: 8),
+                    Text(
+                      'QuickLook',
+                      style: TextStyle(
+                        color: Colors.white, // White text
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14, // Refined font size
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 40),
+
+            // MyMonth Button
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (_) => MyMonthPage()));
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey[700],
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.4),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    )
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.calendar_month_outlined,
+                        color: Colors.white, size: 20), // White icon
+                    SizedBox(width: 8),
+                    Text(
+                      'MyMonth',
+                      style: TextStyle(
+                        color: Colors.white, // White text
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14, // Consistent font size
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

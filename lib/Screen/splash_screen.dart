@@ -23,21 +23,20 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animation = Tween<double>(begin: 0, end: 10).animate(_controller);
 
-    // 🔔 Show immediate notification
-    NotificationService.showImmediateTestNotification();
+    //  Show immediate notification
+    // NotificationService.showImmediateTestNotification();
 
-    // 🕒 Schedule one for 4 seconds later (optional)
-    final now = DateTime.now().add(const Duration(seconds: 8));
-    print('🕒 Scheduling test notification for: $now');
-    NotificationService.scheduleNotification(
-      id: 1,
-      title: "Welcome!",
-      body: "Scheduled notification working ✅",
-      scheduledTime: now,
-    );
+    // final now = DateTime.now().add(const Duration(seconds: 8));
+    // print(' Scheduling test notification for: $now');
+    // NotificationService.scheduleNotification(
+    //   id: 1,
+    //   title: "Welcome!",
+    //   body: "Scheduled notification working ",
+    //   scheduledTime: now,
+    // );
 
-    // ⏳ Delay navigation to give time for scheduled notification
-    Timer(const Duration(seconds: 10), () {
+    //  Delay navigation to give time for scheduled notification
+    Timer(const Duration(seconds: 4), () {
       Navigator.pushReplacementNamed(context, '/login');
     });
   }
