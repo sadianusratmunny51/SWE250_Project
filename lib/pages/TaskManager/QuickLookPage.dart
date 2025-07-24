@@ -396,7 +396,7 @@ class _QuickLookPageState extends State<QuickLookPage> {
                                     "From: ${DateFormat.jm().format(start)} To: ${DateFormat.jm().format(end)}",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.white70, // Muted white
+                                      color: Colors.white70,
                                       fontSize: 13,
                                     ),
                                   ),

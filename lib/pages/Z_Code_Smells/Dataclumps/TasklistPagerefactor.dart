@@ -6,18 +6,19 @@ import 'package:project/pages/TaskManager/QuickLookPage.dart';
 import 'package:project/pages/TaskManager/task_model.dart';
 import 'package:project/pages/TaskManager/task_widget.dart';
 import 'package:project/pages/Notifications/notification_page.dart';
+import 'package:project/pages/Z_Code_Smells/Dataclumps/TaskInput.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:project/services/notification_service.dart';
 
-class TaskListPage extends StatefulWidget {
-  const TaskListPage({super.key});
+class TasklistPageRefactor extends StatefulWidget {
+  const TasklistPageRefactor({super.key});
 
   @override
-  State<TaskListPage> createState() => _TaskListPageState();
+  State<TasklistPageRefactor> createState() => _TasklistPageRefactorState();
 }
 
-class _TaskListPageState extends State<TaskListPage> {
+class _TasklistPageRefactorState extends State<TasklistPageRefactor> {
   List<Task> taskList = [];
   final TextEditingController _taskController = TextEditingController();
   User? currentUser;
@@ -114,13 +115,13 @@ class _TaskListPageState extends State<TaskListPage> {
     });
   }
 
-  void addTask(String taskText, DateTime startTime, DateTime endTime) async {
-    if (currentUser == null || taskText.isEmpty) return;
+  void addTask(TaskInput input) async {
+    if (currentUser == null || input.taskText.isEmpty) return;
 
     final taskData = {
-      'taskText': taskText,
-      'startTime': Timestamp.fromDate(startTime),
-      'endTime': Timestamp.fromDate(endTime),
+      'taskText': input.taskText,
+      'startTime': Timestamp.fromDate(input.startTime),
+      'endTime': Timestamp.fromDate(input.endTime),
       'isDone': false,
       'date': _formatDate(_selectedDay),
     };
@@ -133,9 +134,9 @@ class _TaskListPageState extends State<TaskListPage> {
 
     final newTask = Task(
       id: docRef.id,
-      taskText: taskText,
-      startTime: startTime,
-      endTime: endTime,
+      taskText: input.taskText,
+      startTime: input.startTime,
+      endTime: input.endTime,
       isDone: false,
     );
 
@@ -144,14 +145,6 @@ class _TaskListPageState extends State<TaskListPage> {
     });
 
     _taskController.clear();
-
-    // Schedule notification when the task is added
-    // await NotificationService.scheduleNotification(
-    //   id: docRef.id.hashCode,
-    //   title: 'Task Reminder',
-    //   body: taskText,
-    //   scheduledTime: startTime,
-    // );
   }
 
   void _showAddTaskDialog() {
@@ -261,8 +254,13 @@ class _TaskListPageState extends State<TaskListPage> {
                     if (_taskController.text.isNotEmpty &&
                         selectedStartTime != null &&
                         selectedEndTime != null) {
-                      addTask(_taskController.text, selectedStartTime!,
-                          selectedEndTime!);
+                      final input = TaskInput(
+                        taskText: _taskController.text,
+                        startTime: selectedStartTime!,
+                        endTime: selectedEndTime!,
+                      );
+
+                      addTask(input);
                       Navigator.of(context).pop();
                     }
                   },

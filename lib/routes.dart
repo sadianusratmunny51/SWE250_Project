@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:project/pages/Graphical_Insights/GraphicalInsightsPage.dart';
 import 'package:project/pages/Location/TrackMePage.dart';
 import 'package:project/pages/Notifications/notification_page.dart';
+import 'package:project/services/notification_service.dart';
 import 'package:project/widgets/google_map.dart';
 import 'pages/login.dart';
 import 'pages/dashboard_page.dart';
@@ -18,7 +19,7 @@ class AppRoutes {
     '/dashboard': (context) => const DashboardPage(),
     '/expense': (context) => const ExpenseDashboard(),
     '/tasks': (context) => const TaskListPage(),
-    //'/reminders': (context) => const NotificationsPage(),
+    '/reminders': (context) => const NotificationsPage(),
     '/profile': (context) => ProfilePage(),
     '/trackme': (context) => MyMapPage(),
     '/insights': (context) => const GraphicalInsightsPage()

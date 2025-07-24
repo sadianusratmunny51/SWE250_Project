@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+enum MenuAction { edit, delete }
+
 class MyMonthPage extends StatefulWidget {
   const MyMonthPage({super.key});
 
@@ -356,24 +358,29 @@ class _MyMonthPageState extends State<MyMonthPage> {
                                   ],
                                 ),
                               ),
-                              PopupMenuButton<String>(
-                                onSelected: (value) {
-                                  if (value == 'edit') {
-                                    _editEvent(
-                                        docId, eventTitle, entry.value['date']);
-                                  } else if (value == 'delete') {
-                                    _deleteEvent(docId);
+                              PopupMenuButton<MenuAction>(
+                                onSelected: (MenuAction action) {
+                                  switch (action) {
+                                    case MenuAction.edit:
+                                      _editEvent(docId, eventTitle,
+                                          entry.value['date']);
+                                      break;
+                                    case MenuAction.delete:
+                                      _deleteEvent(docId);
+                                      break;
                                   }
                                 },
-                                icon:
-                                    Icon(Icons.more_vert, color: Colors.white),
                                 itemBuilder: (BuildContext context) => [
-                                  PopupMenuItem(
-                                      value: 'edit', child: Text('Edit')),
-                                  PopupMenuItem(
-                                      value: 'delete', child: Text('Delete')),
+                                  const PopupMenuItem(
+                                    value: MenuAction.edit,
+                                    child: Text('Edit'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: MenuAction.delete,
+                                    child: Text('Delete'),
+                                  ),
                                 ],
-                              ),
+                              )
                             ],
                           ),
                         );

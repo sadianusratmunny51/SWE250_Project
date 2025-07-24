@@ -204,7 +204,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
               const SizedBox(height: 25),
 
-              // Display message (success/error)
+              // Display message
               if (_message != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 15.0),

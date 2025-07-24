@@ -341,24 +341,7 @@ class _ActivityDashboardPageState extends State<ActivityDashboardPage> {
 
             _sectionTitle("This Week's Productivity"),
             const SizedBox(height: 16),
-            //padding: const EdgeInsets.all(16),
             const WeeklyProductivityChart(),
-            // Container(
-            //   decoration: BoxDecoration(
-            //     color: const Color.fromARGB(255, 172, 141, 226)
-            //         .withOpacity(0.25), // Transparent elegant color
-            //     borderRadius: BorderRadius.circular(20),
-            //     boxShadow: const [
-            //       BoxShadow(
-            //         color: Colors.black54,
-            //         blurRadius: 12,
-            //         offset: Offset(0, 6),
-            //       ),
-            //     ],
-            //   ),
-            //   padding: const EdgeInsets.all(16),
-            //   child: const WeeklyProductivityChart(),
-            // ),
 
             const SizedBox(height: 40),
           ],

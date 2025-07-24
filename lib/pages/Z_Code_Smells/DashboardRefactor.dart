@@ -2,21 +2,20 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+class DashboardRefactor extends StatefulWidget {
+  const DashboardRefactor({super.key});
 
   @override
-  _DashboardPageState createState() => _DashboardPageState();
+  _DashboardRefactorState createState() => _DashboardRefactorState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class _DashboardRefactorState extends State<DashboardRefactor> {
   String displayText = '';
   String descriptionText = '';
   String line1Text = '';
   String line2Text = '';
   int _currentBackgroundIndex = 0;
 
-  //  background images
   final List<String> _backgroundImages = [
     'assets/images/back1.png',
     'assets/images/back2.png',
@@ -24,7 +23,6 @@ class _DashboardPageState extends State<DashboardPage> {
     'assets/images/back3.jpg',
   ];
 
-  // List of descriptions corresponding to each image
   final List<String> _backgroundDescriptions = [
     'Track your Location',
     'Schedule your Tasks',
@@ -35,21 +33,22 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    _animateText();
-    _animateDescriptionText(_backgroundDescriptions[_currentBackgroundIndex]);
-    _animateLine1();
-    _animateLine2();
+    _animateTextEffect(
+        'TrackEase Dashboard', (text) => displayText = text, 300);
+    _animateTextEffect(_backgroundDescriptions[_currentBackgroundIndex],
+        (text) => descriptionText = text, 150);
+    _animateTextEffect('Empower your day', (text) => line1Text = text, 300);
+    _animateTextEffect('organize your life', (text) => line2Text = text, 300);
     _startBackgroundRotation();
   }
 
-  // AppBar text
-  void _animateText() {
-    const text = 'TrackEase Dashboard';
+  void _animateTextEffect(
+      String fullText, void Function(String) updateState, int duration) {
     int index = 0;
-    Timer.periodic(const Duration(milliseconds: 300), (timer) {
-      if (index < text.length) {
+    Timer.periodic(Duration(milliseconds: duration), (timer) {
+      if (index < fullText.length) {
         setState(() {
-          displayText += text[index];
+          updateState(fullText.substring(0, index + 1));
         });
         index++;
       } else {
@@ -58,63 +57,13 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  //  description text
-  void _animateDescriptionText(String text) {
-    int index = 0;
-    setState(() {
-      descriptionText = '';
-    });
-    Timer.periodic(const Duration(milliseconds: 150), (timer) {
-      if (index < text.length) {
-        setState(() {
-          descriptionText += text[index];
-        });
-        index++;
-      } else {
-        timer.cancel();
-      }
-    });
-  }
-
-  void _animateLine1() {
-    const text = 'Empower your day';
-    int index = 0;
-    Timer.periodic(const Duration(milliseconds: 300), (timer) {
-      if (index < text.length) {
-        setState(() {
-          line1Text += text[index];
-        });
-        index++;
-      } else {
-        timer.cancel();
-      }
-    });
-  }
-
-  // Animate the second line of tagline
-  void _animateLine2() {
-    const text = 'organize your life';
-    int index = 0;
-    Timer.periodic(const Duration(milliseconds: 300), (timer) {
-      if (index < text.length) {
-        setState(() {
-          line2Text += text[index];
-        });
-        index++;
-      } else {
-        timer.cancel();
-      }
-    });
-  }
-
-  // Background image rotation every 5 seconds
   void _startBackgroundRotation() {
     Timer.periodic(const Duration(seconds: 5), (timer) {
       setState(() {
         _currentBackgroundIndex =
             (_currentBackgroundIndex + 1) % _backgroundImages.length;
-        _animateDescriptionText(
-            _backgroundDescriptions[_currentBackgroundIndex]);
+        _animateTextEffect(_backgroundDescriptions[_currentBackgroundIndex],
+            (text) => descriptionText = text, 150);
       });
     });
   }
@@ -139,10 +88,9 @@ class _DashboardPageState extends State<DashboardPage> {
           iconTheme: const IconThemeData(color: Colors.red),
           flexibleSpace: Stack(
             children: [
-              // Background Image (changes dynamically)
               Positioned.fill(
                 child: AnimatedSwitcher(
-                  duration: const Duration(seconds: 3), // Smooth transition
+                  duration: const Duration(seconds: 3),
                   child: Image.asset(
                     _backgroundImages[_currentBackgroundIndex],
                     key: ValueKey<String>(
@@ -151,8 +99,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
               ),
-
-              // Glassmorphism Effect
               Positioned.fill(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
@@ -161,15 +107,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
               ),
-
-              // Motivational Text Section
               Positioned(
                 bottom: 10,
                 left: -140,
                 right: 20,
                 child: Column(
                   children: [
-                    // First line of motivational text with typewriter effect
                     Text(
                       line1Text,
                       style: const TextStyle(
@@ -180,18 +123,15 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 5),
                   ],
                 ),
               ),
-
               Positioned(
                 bottom: -8,
                 left: 140,
                 right: 20,
                 child: Column(
                   children: [
-                    // First line of motivational text with typewriter effect
                     Text(
                       line2Text,
                       style: const TextStyle(
@@ -202,19 +142,14 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 5),
                   ],
                 ),
               ),
-
-              // Description text
               Positioned(
                 bottom: 150,
                 left: 20,
                 right: 20,
                 child: Container(
-                  width: 200,
-                  height: 40,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
@@ -275,11 +210,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       title: "Graph",
                       color: Colors.purple,
                       route: '/insights'),
-                  // _buildDashboardCard(context,
-                  //     icon: Icons.notifications,
-                  //     title: "Notifications",
-                  //     color: Colors.red,
-                  //     route: '/reminders'),
                   _buildDashboardCard(context,
                       icon: Icons.person,
                       title: "Profile",
@@ -298,7 +228,6 @@ class _DashboardPageState extends State<DashboardPage> {
       {required IconData icon,
       required String title,
       required Color color,
-      // VoidCallback? onTap,
       required String route}) {
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, route),
@@ -309,7 +238,7 @@ class _DashboardPageState extends State<DashboardPage> {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.5), // Glow effect
+              color: color.withOpacity(0.5),
               blurRadius: 10,
               spreadRadius: 2,
             ),

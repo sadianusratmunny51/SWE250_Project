@@ -1,87 +1,88 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:project/pages/TaskManager/task_model.dart';
+import 'package:intl/intl.dart';
+import 'package:project/pages/TaskManager/task_model.dart'; // Import your Task model
 
 class NotificationsPage extends StatefulWidget {
-  final List<Task> taskList;
-
-  const NotificationsPage({Key? key, required this.taskList}) : super(key: key);
+  const NotificationsPage({super.key});
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
+  List<Task> todayTasks = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTodayTasks();
+  }
+
+  Future<void> fetchTodayTasks() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    String todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('tasks')
+        .where('date', isEqualTo: todayDate)
+        .get();
+
+    final tasks = snapshot.docs.map((doc) {
+      final data = doc.data();
+      return Task(
+        id: doc.id,
+        taskText: data['taskText'] ?? '',
+        isDone: data['isDone'] ?? false,
+        startTime: data['startTime'] != null
+            ? (data['startTime'] as Timestamp).toDate()
+            : null,
+        endTime: data['endTime'] != null
+            ? (data['endTime'] as Timestamp).toDate()
+            : null,
+      );
+    }).toList();
+
+    setState(() {
+      todayTasks = tasks;
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    DateTime now = DateTime.now();
-
-    List<Task> upcomingTasks = widget.taskList
-        .where((task) =>
-            task.startTime != null && task.startTime!.isAfter(DateTime.now()))
-        .toList();
-    List<Task> pastTasks =
-        widget.taskList.where((task) => task.isDone).toList();
-
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title:
-            const Text("Notifications", style: TextStyle(color: Colors.white)),
-        centerTitle: true,
+        title: const Text("Today's Notifications"),
+        backgroundColor: Colors.blueAccent,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle("Upcoming Tasks"),
-            Expanded(child: _buildNotificationList(upcomingTasks, Colors.blue)),
-            const SizedBox(height: 20),
-            _buildSectionTitle("Completed Tasks"),
-            Expanded(child: _buildNotificationList(pastTasks, Colors.green)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _buildNotificationList(List<Task> tasks, Color color) {
-    return tasks.isEmpty
-        ? const Padding(
-            padding: EdgeInsets.all(8.0),
-            child:
-                Text("No tasks found", style: TextStyle(color: Colors.white54)),
-          )
-        : ListView.builder(
-            itemCount: tasks.length,
-            itemBuilder: (context, index) {
-              var task = tasks[index];
-              return Card(
-                color: Colors.grey[900],
-                child: ListTile(
-                  leading: Icon(Icons.notifications, color: color),
-                  title: Text(task.taskText,
-                      style: const TextStyle(color: Colors.white)),
-                  subtitle: Text(
-                    "Start: ${task.startTime != null ? "${task.startTime!.hour}:${task.startTime!.minute}" : "N/A"} | "
-                    "End: ${task.endTime != null ? "${task.endTime!.hour}:${task.endTime!.minute}" : "N/A"}",
-                    style: const TextStyle(color: Colors.grey),
-                  ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : todayTasks.isEmpty
+              ? const Center(child: Text("No tasks for today! 🎉"))
+              : ListView.builder(
+                  itemCount: todayTasks.length,
+                  itemBuilder: (context, index) {
+                    final task = todayTasks[index];
+                    return ListTile(
+                      title: Text(task.taskText),
+                      subtitle: Text(
+                          'Start: ${task.startTime?.hour}:${task.startTime?.minute.toString().padLeft(2, '0')}'),
+                      trailing: Icon(
+                        task.isDone
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        color: task.isDone ? Colors.green : Colors.grey,
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          );
+    );
   }
 }

@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:project/Screen/welcome_screen.dart';
 
-class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+class SignUpRefactor extends StatefulWidget {
+  const SignUpRefactor({super.key});
 
   @override
-  State<SignUpPage> createState() => _SignUpPageState();
+  State<SignUpRefactor> createState() => _SignUpPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class _SignUpPageState extends State<SignUpRefactor> {
   final _auth = FirebaseAuth.instance;
 
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -30,12 +29,14 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  Future<void> _register() async {
+  void _setError(String message) {
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      _errorMessage = message;
+      _isLoading = false;
     });
+  }
 
+  bool _validateInputs() {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
@@ -45,44 +46,32 @@ class _SignUpPageState extends State<SignUpPage> {
         password.isEmpty ||
         username.isEmpty ||
         confirmPassword.isEmpty) {
-      setState(() {
-        _errorMessage = "All fields are required.";
-        _isLoading = false;
-      });
-      return;
+      _setError("All fields are required.");
+      return false;
     }
 
     if (password != confirmPassword) {
-      setState(() {
-        _errorMessage = "Passwords do not match.";
-        _isLoading = false;
-      });
-      return;
+      _setError("Passwords do not match.");
+      return false;
     }
-    bool isSpecial = false;
-    bool isCapital = false;
-    for (int i = 0; i < password.length; i++) {
-      String ch = password[i];
-      if (RegExp(r'[A-Z]').hasMatch(ch)) {
-        isCapital = true;
-      }
-      if (RegExp(r'[A-Z]').hasMatch(ch)) {
-        isSpecial = true;
-      }
+
+    return true;
+  }
+
+  bool _validatePassword(String password) {
+    final regex = RegExp(r'^(?=.*[A-Z])(?=.*[!@#\$&*~]).{8,}\$');
+    if (!regex.hasMatch(password)) {
+      _setError(
+          "Password must include a capital letter and special character, and be at least 8 characters long.");
+      return false;
     }
-    if (password.length < 8) {
-      setState(() {
-        _errorMessage = "Password must be at least 8 characters long.";
-        _isLoading = false;
-      });
-      return;
-    } else if (!isCapital || !isSpecial) {
-      setState(() {
-        _errorMessage = "Password must special characters and capital.";
-        _isLoading = false;
-      });
-      return;
-    }
+    return true;
+  }
+
+  Future<void> _registerUser() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final username = _usernameController.text.trim();
 
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
@@ -92,13 +81,11 @@ class _SignUpPageState extends State<SignUpPage> {
 
       if (userCredential.user != null) {
         await userCredential.user!.updateDisplayName(username);
-
         await userCredential.user!.sendEmailVerification();
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-                "Registration successful! A verification email has been sent. Please verify your email to log in."),
+            content: Text("Registration successful! Please verify your email."),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 5),
           ),
@@ -122,21 +109,30 @@ class _SignUpPageState extends State<SignUpPage> {
           errorMessageText = 'The email address is not valid.';
           break;
         default:
-          errorMessageText =
-              e.message ?? "An unknown error occurred during registration.";
+          errorMessageText = e.message ?? "An unknown error occurred.";
       }
-      setState(() {
-        _errorMessage = errorMessageText;
-      });
+      _setError(errorMessageText);
     } catch (e) {
-      setState(() {
-        _errorMessage = "An unexpected error occurred: ${e.toString()}";
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      _setError("An unexpected error occurred: ${e.toString()}");
     }
+  }
+
+  Future<void> _register() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final password = _passwordController.text.trim();
+
+    if (!_validateInputs()) return;
+    if (!_validatePassword(password)) return;
+
+    await _registerUser();
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Widget _buildTextField({
@@ -202,9 +198,7 @@ class _SignUpPageState extends State<SignUpPage> {
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
           child: Column(
-            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(height: size.height * 0.1),
               const Icon(Icons.person_add_alt_1_rounded,
@@ -213,49 +207,38 @@ class _SignUpPageState extends State<SignUpPage> {
               const Text(
                 'Create Your Account',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Join us to manage your tasks',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
               SizedBox(height: size.height * 0.05),
               _buildTextField(
-                controller: _usernameController,
-                hint: 'Username',
-                icon: Icons.person_outline,
-                keyboardType: TextInputType.text,
-              ),
+                  controller: _usernameController,
+                  hint: 'Username',
+                  icon: Icons.person_outline),
               const SizedBox(height: 18),
               _buildTextField(
-                controller: _emailController,
-                hint: 'Email',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-              ),
+                  controller: _emailController,
+                  hint: 'Email',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress),
               const SizedBox(height: 18),
               _buildTextField(
-                controller: _passwordController,
-                hint: 'Password',
-                icon: Icons.lock_outline,
-                obscure: true,
-                keyboardType: TextInputType.text,
-              ),
+                  controller: _passwordController,
+                  hint: 'Password',
+                  icon: Icons.lock_outline,
+                  obscure: true),
               const SizedBox(height: 18),
               _buildTextField(
-                controller: _confirmPasswordController,
-                hint: 'Confirm Password',
-                icon: Icons.lock_reset_outlined,
-                obscure: true,
-                keyboardType: TextInputType.text,
-              ),
+                  controller: _confirmPasswordController,
+                  hint: 'Confirm Password',
+                  icon: Icons.lock_reset_outlined,
+                  obscure: true),
               const SizedBox(height: 25),
               if (_errorMessage != null)
                 Padding(
@@ -263,10 +246,9 @@ class _SignUpPageState extends State<SignUpPage> {
                   child: Text(
                     _errorMessage!,
                     style: const TextStyle(
-                      color: Colors.redAccent,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                        color: Colors.redAccent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -276,8 +258,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   backgroundColor: const Color(0xFF4FC3F7),
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
+                      borderRadius: BorderRadius.circular(30)),
                   minimumSize: Size(double.infinity, size.height * 0.065),
                   elevation: 8,
                   shadowColor: Colors.black.withOpacity(0.4),
@@ -287,38 +268,24 @@ class _SignUpPageState extends State<SignUpPage> {
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
-                          color: Colors.black,
-                          strokeWidth: 2.5,
-                        ),
-                      )
-                    : const Text(
-                        'Sign Up',
+                            color: Colors.black, strokeWidth: 2.5))
+                    : const Text('Sign Up',
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                            fontSize: 18, fontWeight: FontWeight.w600)),
               ),
               SizedBox(height: size.height * 0.04),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "Already have an account?",
-                    style: TextStyle(color: Colors.white70),
-                  ),
+                  const Text("Already have an account?",
+                      style: TextStyle(color: Colors.white70)),
                   TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      'Log in',
-                      style: TextStyle(
-                        color: Color(0xFF81D4FA),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Log in',
+                        style: TextStyle(
+                            color: Color(0xFF81D4FA),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16)),
                   ),
                 ],
               ),
